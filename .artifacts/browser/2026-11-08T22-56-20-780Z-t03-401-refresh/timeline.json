@@ -1,0 +1,17 @@
+{
+  "entries": [
+    {
+      "id": 1,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 885,
+      "beforeUrl": "about:blank",
+      "afterUrl": "http://127.0.0.1:3000/",
+      "line": "#1 | browser_navigate | success | 885ms | url=\"http://127.0.0.1:3000/\" | URL changed to http://127.0.0.1:3000/; title changed to Harlequin; landmarks 0→1; buttons 0→1 | Warnings: JS: Failed to load resource: the server responded with a status of 404 (Not Found)\nUse browser_get_console_logs/browser_get_network_logs for full diagnostics."
+    }
+  ],
+  "retained": 1,
+  "totalRecorded": 1,
+  "bounded": false,
+  "summary": "Timeline: 1 browser action recorded."
+}

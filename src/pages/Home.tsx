@@ -14,6 +14,7 @@ import {
 } from '../api/playlists';
 import { fetchCurrentUser } from '../api/user';
 import { logout } from '../api/auth';
+import { navigate } from '../routing';
 
 /**
  * Home view: shows the authenticated state when tokens exist (and the access
@@ -165,6 +166,9 @@ export default function Home(): JSX.Element {
             loading={playlistsLoading}
             error={playlistsError}
             onRetry={() => setReloadCount((n) => n + 1)}
+            onOpenPlaylist={(id) =>
+              navigate('/playlist/' + encodeURIComponent(id))
+            }
           />
         </>
       ) : (

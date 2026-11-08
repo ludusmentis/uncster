@@ -1,0 +1,71 @@
+{
+  "entries": [
+    {
+      "id": 1,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 812,
+      "beforeUrl": "about:blank",
+      "afterUrl": "about:blank",
+      "line": "#1 | browser_navigate | success | 812ms | url=\"about:blank\" | No meaningful browser-state change detected"
+    },
+    {
+      "id": 2,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 855,
+      "beforeUrl": "about:blank",
+      "afterUrl": "http://127.0.0.1:3000/",
+      "line": "#2 | browser_navigate | success | 855ms | url=\"http://127.0.0.1:3000/\" | URL changed to http://127.0.0.1:3000/; title changed to Harlequin; landmarks 0→1; buttons 0→1 | Warnings: JS: Failed to load resource: the server responded with a status of 404 (Not Found)\nUse browser_get_console_logs/browser_get_network_logs for full diagnostics."
+    },
+    {
+      "id": 3,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 597,
+      "beforeUrl": "http://127.0.0.1:3000/",
+      "afterUrl": "http://127.0.0.1:3000/playlist/3mve826DLmhVrxih1LdUTs",
+      "line": "#3 | browser_click | success | 597ms | selector=\"button:has(img[alt=\\\"Róisín Murphy Complete cover art\\\"])\" | PASS (url_changed, target_state_changed) | URL changed to http://127.0.0.1:3000/playlist/3mve826DLmhVrxih1LdUTs; landmarks 1→2; buttons 47→2; headings changed | Warnings: JS: Failed to load resource: the server responded with a status of 403 () (x2) | [tracks] failed to load playlist tracks FetchPlaylistTracksError: Failed to load playlist tracks (HTTP 403).\n    at fetc (x2)\nUse browser_get_console_logs/browser_get_network_logs for full diagnostics."
+    },
+    {
+      "id": 4,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 592,
+      "beforeUrl": "http://127.0.0.1:3000/playlist/3mve826DLmhVrxih1LdUTs",
+      "afterUrl": "http://127.0.0.1:3000/",
+      "line": "#4 | browser_click | success | 592ms | selector=\"button\" | PASS (url_changed) | URL changed to http://127.0.0.1:3000/; landmarks 2→1; buttons 2→47; headings changed | Warnings: JS: Failed to load resource: the server responded with a status of 403 () (x2)\nUse browser_get_console_logs/browser_get_network_logs for full diagnostics."
+    },
+    {
+      "id": 5,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 549,
+      "beforeUrl": "http://127.0.0.1:3000/",
+      "afterUrl": "http://127.0.0.1:3000/playlist/4Jav8XB3XHsxfZHx5lBJeB",
+      "line": "#5 | browser_click | success | 549ms | selector=\"button:has(img[alt=\\\"FinLT Awesome Mix cover art\\\"])\" | PASS (url_changed, target_state_changed) | URL changed to http://127.0.0.1:3000/playlist/4Jav8XB3XHsxfZHx5lBJeB; buttons 47→1; headings changed; visible text changed | Warnings: JS: Failed to load resource: the server responded with a status of 403 () (x2)\nUse browser_get_console_logs/browser_get_network_logs for full diagnostics."
+    },
+    {
+      "id": 6,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 1634,
+      "beforeUrl": "http://127.0.0.1:3000/playlist/4Jav8XB3XHsxfZHx5lBJeB",
+      "afterUrl": "http://127.0.0.1:3000/playlist/4Jav8XB3XHsxfZHx5lBJeB",
+      "line": "#6 | browser_navigate | success | 1634ms | url=\"http://127.0.0.1:3000/playlist/4Jav8XB3XHsxfZHx5lBJeB\" | No meaningful browser-state change detected"
+    },
+    {
+      "id": 7,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 594,
+      "beforeUrl": "http://127.0.0.1:3000/playlist/4Jav8XB3XHsxfZHx5lBJeB",
+      "afterUrl": "http://127.0.0.1:3000/",
+      "line": "#7 | browser_click | success | 594ms | selector=\"button\" | PASS (url_changed) | URL changed to http://127.0.0.1:3000/; buttons 1→47; headings changed; visible text changed"
+    }
+  ],
+  "retained": 7,
+  "totalRecorded": 7,
+  "bounded": false,
+  "summary": "Timeline: 7 browser actions recorded."
+}

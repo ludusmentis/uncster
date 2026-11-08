@@ -1,0 +1,184 @@
+[
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "timestamp": 1794174968642,
+    "url": "http://127.0.0.1:3000/",
+    "pageId": 1
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "timestamp": 1794174968653,
+    "url": "http://127.0.0.1:3000/",
+    "pageId": 1
+  },
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "timestamp": 1794174968663,
+    "url": "http://127.0.0.1:3000/",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "timestamp": 1794174968698,
+    "url": "http://127.0.0.1:3000/",
+    "pageId": 1
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "timestamp": 1794174977169,
+    "url": "http://127.0.0.1:3000/",
+    "pageId": 1
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "timestamp": 1794174977173,
+    "url": "http://127.0.0.1:3000/",
+    "pageId": 1
+  },
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "timestamp": 1794174977174,
+    "url": "http://127.0.0.1:3000/",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 403 ()",
+    "timestamp": 1794174998091,
+    "url": "http://127.0.0.1:3000/playlist/3mve826DLmhVrxih1LdUTs",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "[tracks] failed to load playlist tracks FetchPlaylistTracksError: Failed to load playlist tracks (HTTP 403).\n    at fetchPlaylistTrackPage (http://127.0.0.1:3000/src/api/tracks.ts?t=1794174943181:15:11)\n    at async fetchAllPlaylistTracks (http://127.0.0.1:3000/src/api/tracks.ts?t=1794174943181:37:18)",
+    "timestamp": 1794174998092,
+    "url": "http://127.0.0.1:3000/playlist/3mve826DLmhVrxih1LdUTs",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 403 ()",
+    "timestamp": 1794174998281,
+    "url": "http://127.0.0.1:3000/playlist/3mve826DLmhVrxih1LdUTs",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "[tracks] failed to load playlist tracks FetchPlaylistTracksError: Failed to load playlist tracks (HTTP 403).\n    at fetchPlaylistTrackPage (http://127.0.0.1:3000/src/api/tracks.ts?t=1794174943181:15:11)\n    at async fetchAllPlaylistTracks (http://127.0.0.1:3000/src/api/tracks.ts?t=1794174943181:37:18)",
+    "timestamp": 1794174998282,
+    "url": "http://127.0.0.1:3000/playlist/3mve826DLmhVrxih1LdUTs",
+    "pageId": 1
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "timestamp": 1794175006398,
+    "url": "http://127.0.0.1:3000/playlist/3mve826DLmhVrxih1LdUTs",
+    "pageId": 1
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "timestamp": 1794175006406,
+    "url": "http://127.0.0.1:3000/playlist/3mve826DLmhVrxih1LdUTs",
+    "pageId": 1
+  },
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "timestamp": 1794175006443,
+    "url": "http://127.0.0.1:3000/playlist/3mve826DLmhVrxih1LdUTs",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 403 ()",
+    "timestamp": 1794175006561,
+    "url": "http://127.0.0.1:3000/playlist/3mve826DLmhVrxih1LdUTs",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "[tracks] failed to load playlist tracks FetchPlaylistTracksError: Failed to load playlist tracks (HTTP 403).\n    at fetchPlaylistTrackPage (http://127.0.0.1:3000/src/api/tracks.ts?t=1794174943181:15:11)\n    at async fetchAllPlaylistTracks (http://127.0.0.1:3000/src/api/tracks.ts?t=1794174943181:37:18)",
+    "timestamp": 1794175006561,
+    "url": "http://127.0.0.1:3000/playlist/3mve826DLmhVrxih1LdUTs",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 403 ()",
+    "timestamp": 1794175006841,
+    "url": "http://127.0.0.1:3000/playlist/3mve826DLmhVrxih1LdUTs",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "[tracks] failed to load playlist tracks FetchPlaylistTracksError: Failed to load playlist tracks (HTTP 403).\n    at fetchPlaylistTrackPage (http://127.0.0.1:3000/src/api/tracks.ts?t=1794174943181:15:11)\n    at async fetchAllPlaylistTracks (http://127.0.0.1:3000/src/api/tracks.ts?t=1794174943181:37:18)",
+    "timestamp": 1794175006841,
+    "url": "http://127.0.0.1:3000/playlist/3mve826DLmhVrxih1LdUTs",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 403 ()",
+    "timestamp": 1794175012819,
+    "url": "http://127.0.0.1:3000/playlist/3mve826DLmhVrxih1LdUTs",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 403 ()",
+    "timestamp": 1794175012996,
+    "url": "http://127.0.0.1:3000/playlist/3mve826DLmhVrxih1LdUTs",
+    "pageId": 1
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "timestamp": 1794175034953,
+    "url": "http://127.0.0.1:3000/playlist/4Jav8XB3XHsxfZHx5lBJeB",
+    "pageId": 1
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "timestamp": 1794175034989,
+    "url": "http://127.0.0.1:3000/playlist/4Jav8XB3XHsxfZHx5lBJeB",
+    "pageId": 1
+  },
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "timestamp": 1794175034991,
+    "url": "http://127.0.0.1:3000/playlist/4Jav8XB3XHsxfZHx5lBJeB",
+    "pageId": 1
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "timestamp": 1794175042679,
+    "url": "http://127.0.0.1:3000/playlist/4Jav8XB3XHsxfZHx5lBJeB",
+    "pageId": 1
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "timestamp": 1794175042715,
+    "url": "http://127.0.0.1:3000/playlist/4Jav8XB3XHsxfZHx5lBJeB",
+    "pageId": 1
+  },
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "timestamp": 1794175042715,
+    "url": "http://127.0.0.1:3000/playlist/4Jav8XB3XHsxfZHx5lBJeB",
+    "pageId": 1
+  }
+]

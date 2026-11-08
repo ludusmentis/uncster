@@ -1,0 +1,17 @@
+- main:
+  - paragraph:
+    - button "← Back to playlists"
+  - heading "Playlist tracks" [level=1]
+  - list:
+    - listitem:
+      - img "Song One cover art"
+      - paragraph: Song One
+      - paragraph: Artist Alpha, Artist Beta · 2019
+    - listitem:
+      - img "Unavailable track": 🎵
+      - paragraph: Unavailable track
+      - paragraph: — · —
+    - listitem:
+      - img "Episode Thing has no cover art": 🎵
+      - paragraph: Episode Thing
+      - paragraph: — · —

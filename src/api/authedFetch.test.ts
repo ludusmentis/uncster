@@ -7,6 +7,18 @@
  * - non-401 API errors are surfaced untouched (no refresh attempted)
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// spotifyAuth.ts captures import.meta.env.VITE_SPOTIFY_CLIENT_ID at module
+// load, so the id must exist before that module is imported. vi.hoisted runs
+// before imports; a beforeEach vi.stubEnv alone is too late when the ambient
+// shell does not export the var (e.g. sanitized test environments), which
+// made the refresh tests fail outside the dev shell.
+vi.hoisted(() => {
+  // Cast only for typing: `process` exists at runtime in vitest's node env.
+  const env = (globalThis as unknown as { process: { env: Record<string, string | undefined> } })
+    .process.env;
+  env.VITE_SPOTIFY_CLIENT_ID ??= 'test-client-id';
+});
 import { authedFetch, NotConnectedError } from './authedFetch';
 import { loadTokens, saveTokens, clearTokens, type StoredTokens } from '../auth/tokenStore';
 import { getAuthState, subscribeAuth, type AuthState } from '../auth/AuthContext';

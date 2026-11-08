@@ -10,11 +10,13 @@ export default function PlaylistGrid({
   loading,
   error,
   onRetry,
+  onOpenPlaylist,
 }: {
   playlists: SpotifyPlaylist[];
   loading: boolean;
   error: string | null;
   onRetry: () => void;
+  onOpenPlaylist?: (id: string) => void;
 }): JSX.Element {
   if (loading) {
     return <p role="status">Loading your playlists…</p>;
@@ -44,7 +46,11 @@ export default function PlaylistGrid({
       }}
     >
       {playlists.map((playlist) => (
-        <PlaylistCard key={playlist.id} playlist={playlist} />
+        <PlaylistCard
+          key={playlist.id}
+          playlist={playlist}
+          onOpen={onOpenPlaylist ? () => onOpenPlaylist(playlist.id) : undefined}
+        />
       ))}
     </div>
   );

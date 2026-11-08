@@ -1,0 +1,31 @@
+{
+  "sliceTask": "M002/S03/T03 — 401-mid-browse proof: single silent refresh and load",
+  "capturedAt": "2026-11-08T22:56:19.968Z",
+  "environment": "live, no mocks, no simulated tokens; Vite dev server at http://127.0.0.1:3000; real Spotify Web API + accounts.spotify.com token endpoint",
+  "method": "Genuinely expired access token (issued 21:54 UTC window, expiresAt 2026-11-08T22:47:09.588Z — expired >8 min before the test) restored into the live SPA session; in-page fetch tap (transparent observer wrapping window.fetch, all requests still hit the real network) recorded method/URL/status; SPA route change (pushState + popstate, no page reload — true mid-browse) opened /playlist/4Jav8XB3XHsxfZHx5lBJeB.",
+  "tokenExpiryReal": "The access token from the T02 human-logged-in session was allowed to expire naturally (3600s Spotify validity). No expiry was faked; no responses were mocked.",
+  "initialTokenExpiresAt": "2026-11-08T22:47:09.588Z",
+  "tap": [
+    { "u": "https://api.spotify.com/v1/playlists/4Jav8XB3XHsxfZHx5lBJeB/items?limit=100", "m": "GET", "s": 401, "t": 1794178550474 },
+    { "u": "https://api.spotify.com/v1/playlists/4Jav8XB3XHsxfZHx5lBJeB/items?limit=100", "m": "GET", "s": 401, "t": 1794178550499 },
+    { "u": "https://accounts.spotify.com/api/token", "m": "POST", "s": 200, "t": 1794178550552 },
+    { "u": "https://api.spotify.com/v1/playlists/4Jav8XB3XHsxfZHx5lBJeB/items?limit=100", "m": "GET", "s": 200, "t": 1794178550807 },
+    { "u": "https://api.spotify.com/v1/playlists/4Jav8XB3XHsxfZHx5lBJeB/items?offset=100&limit=100&locale=de-DE,de;q%3D0.9,en-US;q%3D0.8,en;q%3D0.7", "m": "GET", "s": 200, "t": 1794178550986 },
+    { "u": "https://api.spotify.com/v1/playlists/4Jav8XB3XHsxfZHx5lBJeB/items?limit=100", "m": "GET", "s": 200, "t": 1794178551013 },
+    { "u": "https://api.spotify.com/v1/me", "m": "GET", "s": 200, "t": 1794178565389 },
+    { "u": "https://api.spotify.com/v1/me", "m": "GET", "s": 200, "t": 1794178565434 },
+    { "u": "https://api.spotify.com/v1/me/playlists?limit=50", "m": "GET", "s": 200, "t": 1794178565496 },
+    { "u": "https://api.spotify.com/v1/me/playlists?limit=50", "m": "GET", "s": 200, "t": 1794178565693 }
+  ],
+  "assertions": {
+    "real401": "Two concurrent GET /v1/playlists/4Jav8XB3XHsxfZHx5lBJeB/items?limit=100 both returned 401 from real Spotify (React StrictMode dev double-invoke produced two parallel fetches — an even stronger concurrency test for the single-flight contract).",
+    "exactlyOneRefresh": "Exactly ONE POST to https://accounts.spotify.com/api/token (200) despite two concurrent 401 callers — single-flight refresh (src/api/authedFetch.ts) merged them into one in-flight promise.",
+    "retrySucceeded": "Retried GET /items?limit=100 returned 200 with the fresh token; cursor page 2 (offset=100) also 200.",
+    "tracksRendered": "142 track rows rendered (matches T02's FinLT track count); role=status loading cleared; NO role=alert error state.",
+    "consoleContract": "Console showed exactly one '[auth:refresh] access token rejected (401) — attempting silent refresh' and one '[auth:refresh] silent refresh succeeded' (D003 logging contract).",
+    "tokenPersisted": "localStorage harlequin.spotify.tokens updated by the app's refreshAccessToken/saveTokens: newExpiresAt 2026-11-08T23:55:50.552Z (= refresh time + 3600s, real expires_in), refresh token unchanged (Spotify did not rotate), scope intact.",
+    "backToGrid": "SPA Back to '/' rendered the authed Home grid with the refreshed token: 'Signed in' header, FinLT card present, 47 buttons, /v1/me 200, two /v1/me/playlists pages 200, no alert, no failure.",
+    "noGhostSession": "No logout performed; no PKCE sessionStorage keys present; teardown path (L001, api/auth.ts logout) untouched — zero code changes in this slice."
+  },
+  "deviations": "browser_get_network_logs does not capture cross-origin fetches in this environment (T02's network.json is likewise empty), so an in-page transparent fetch tap supplied method/URL/status evidence; the tap alters no responses — every request still hit the real Spotify API. The T02 live session had closed before the token expired, so the expired-token state was restored into a fresh SPA session and the playlist was opened via SPA route change (mid-browse) rather than a grid click; the grid itself gates on hasUsableAccessToken and correctly shows Connect after expiry — the R009 contract being proven is the API-layer 401 path, which this exercises end-to-end."
+}

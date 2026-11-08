@@ -1,0 +1,98 @@
+{
+  "entries": [
+    {
+      "id": 1,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 865,
+      "beforeUrl": "about:blank",
+      "afterUrl": "http://127.0.0.1:3000/",
+      "line": "#1 | browser_navigate | success | 865ms | url=\"http://127.0.0.1:3000\" | URL changed to http://127.0.0.1:3000/; title changed to Harlequin; landmarks 0→1; buttons 0→1 | Warnings: JS: Failed to load resource: the server responded with a status of 404 (Not Found)\nUse browser_get_console_logs/browser_get_network_logs for full diagnostics."
+    },
+    {
+      "id": 2,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 161,
+      "beforeUrl": "http://127.0.0.1:3000/",
+      "afterUrl": "http://127.0.0.1:3000/playlist/pl1",
+      "line": "#2 | browser_click | success | 161ms | selector=\"button:has-text(\\\"Test Playlist Alpha\\\")\" | PASS (url_changed) | URL changed to http://127.0.0.1:3000/playlist/pl1; buttons 3→1; headings changed; visible text changed"
+    },
+    {
+      "id": 3,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 210,
+      "beforeUrl": "http://127.0.0.1:3000/playlist/pl1",
+      "afterUrl": "http://127.0.0.1:3000/",
+      "line": "#3 | browser_click | success | 210ms | selector=\"button:has-text(\\\"Back to playlists\\\")\" | PASS (url_changed) | URL changed to http://127.0.0.1:3000/; buttons 1→3; headings changed; visible text changed"
+    },
+    {
+      "id": 4,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 902,
+      "beforeUrl": "http://127.0.0.1:3000/playlist/pl1",
+      "afterUrl": "http://127.0.0.1:3000/foo",
+      "line": "#4 | browser_navigate | success | 902ms | url=\"http://127.0.0.1:3000/foo\" | URL changed to http://127.0.0.1:3000/foo; buttons 1→3; headings changed; visible text changed"
+    },
+    {
+      "id": 5,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 227,
+      "beforeUrl": "http://127.0.0.1:3000/foo",
+      "afterUrl": "http://127.0.0.1:3000/playlist/pl1",
+      "line": "#5 | browser_click | success | 227ms | selector=\"button:has-text(\\\"Test Playlist Alpha\\\")\" | PASS (url_changed) | URL changed to http://127.0.0.1:3000/playlist/pl1; buttons 3→1; headings changed; visible text changed"
+    },
+    {
+      "id": 6,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 970,
+      "beforeUrl": "http://127.0.0.1:3000/playlist/pl1",
+      "afterUrl": "http://127.0.0.1:3000/playlist/pl1",
+      "line": "#6 | browser_navigate | success | 970ms | url=\"http://127.0.0.1:3000/playlist/pl1\" | landmarks 1→2; buttons 1→2; visible text changed"
+    },
+    {
+      "id": 7,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 262,
+      "beforeUrl": "http://127.0.0.1:3000/playlist/pl1",
+      "afterUrl": "http://127.0.0.1:3000/playlist/pl1",
+      "line": "#7 | browser_click | success | 262ms | selector=\"button:has-text(\\\"Try again\\\")\" | SOFT-FAIL (no observable state change) | visible text changed"
+    },
+    {
+      "id": 8,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 548,
+      "beforeUrl": "http://127.0.0.1:3000/playlist/pl1",
+      "afterUrl": "http://127.0.0.1:3000/playlist/pl1",
+      "line": "#8 | browser_click | success | 548ms | selector=\"button:has-text(\\\"Try again\\\")\" | SOFT-FAIL (no observable state change) | landmarks 2→1; buttons 2→1; visible text changed"
+    },
+    {
+      "id": 9,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 204,
+      "beforeUrl": "http://127.0.0.1:3000/playlist/pl1",
+      "afterUrl": "http://127.0.0.1:3000/playlist/pl1",
+      "line": "#9 | browser_click | success | 204ms | selector=\"button:has-text(\\\"Try again\\\")\" | SOFT-FAIL (no observable state change) | landmarks 2→1; buttons 2→1; visible text changed"
+    },
+    {
+      "id": 10,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 137,
+      "beforeUrl": "http://127.0.0.1:3000/",
+      "afterUrl": "http://127.0.0.1:3000/playlist/pl1",
+      "line": "#10 | browser_click | success | 137ms | selector=\"button:has-text(\\\"Test Playlist Alpha\\\")\" | PASS (url_changed) | URL changed to http://127.0.0.1:3000/playlist/pl1; buttons 3→1; headings changed; visible text changed"
+    }
+  ],
+  "retained": 10,
+  "totalRecorded": 10,
+  "bounded": false,
+  "summary": "Timeline: 10 browser actions recorded."
+}

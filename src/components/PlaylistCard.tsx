@@ -6,19 +6,15 @@ import type { SpotifyPlaylist } from '../api/playlists';
  */
 export default function PlaylistCard({
   playlist,
+  onOpen,
 }: {
   playlist: SpotifyPlaylist;
+  onOpen?: () => void;
 }): JSX.Element {
   const cover = playlist.images?.find((img) => img.url)?.url;
 
-  return (
-    <article
-      style={{
-        width: 180,
-        textAlign: 'center',
-        fontFamily: 'system-ui, sans-serif',
-      }}
-    >
+  const content = (
+    <>
       {cover ? (
         <img
           src={cover}
@@ -58,6 +54,41 @@ export default function PlaylistCard({
       >
         {playlist.name}
       </p>
+    </>
+  );
+
+  if (onOpen) {
+    return (
+      <button
+        onClick={onOpen}
+        style={{
+          display: 'block',
+          border: 'none',
+          background: 'none',
+          padding: 0,
+          margin: 0,
+          font: 'inherit',
+          color: 'inherit',
+          textAlign: 'center',
+          width: 180,
+          cursor: 'pointer',
+          fontFamily: 'system-ui, sans-serif',
+        }}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <article
+      style={{
+        width: 180,
+        textAlign: 'center',
+        fontFamily: 'system-ui, sans-serif',
+      }}
+    >
+      {content}
     </article>
   );
 }

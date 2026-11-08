@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1,
+    "title": "Harlequin",
+    "url": "http://127.0.0.1:3000/playlist/pl1",
+    "opener": null,
+    "isActive": true
+  }
+]

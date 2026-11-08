@@ -1,17 +1,30 @@
+import { useEffect, useState } from 'react';
 import Home from './pages/Home';
 import Callback from './pages/Callback';
+import PlaylistTracks from './pages/PlaylistTracks';
+import { parseRoute, subscribeRoute } from './routing';
 
 /**
- * Minimal path-based routing (no router dependency yet).
- * Vite dev server serves the SPA at / and /callback; unknown paths
- * fall back to Home, matching the two registered routes.
+ * Minimal pushState-aware routing (no router dependency). subscribeRoute
+ * keeps the current path in state so navigate()/popstate re-render; the
+ * route itself is resolved by the pure parseRoute helper.
  */
 export default function App(): JSX.Element {
-  const path = window.location.pathname;
+  const [path, setPath] = useState(window.location.pathname);
 
-  if (path === '/callback') {
-    return <Callback />;
+  useEffect(() => {
+    const unsubscribe = subscribeRoute((next) => setPath(next));
+    return unsubscribe;
+  }, []);
+
+  const route = parseRoute(path);
+
+  switch (route.name) {
+    case 'callback':
+      return <Callback />;
+    case 'playlist':
+      return <PlaylistTracks id={route.id} />;
+    default:
+      return <Home />;
   }
-
-  return <Home />;
 }
