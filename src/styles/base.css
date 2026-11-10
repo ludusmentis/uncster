@@ -1,0 +1,638 @@
+/* Uncster base styles: minimal reset, body defaults, typography and UI
+   primitives — all consuming tokens.css. Layered glow is reserved for
+   headings/emphasis only (Q3); small text uses solid neon colours. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-body-family);
+  font-size: var(--font-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 var(--space-m);
+  color: var(--text-primary);
+}
+
+p {
+  margin: 0 0 var(--space-s);
+}
+
+/* Wordmark: Monoton 44px white + layered neon glow, exactly as user-specified. */
+.neon-title {
+  font-family: var(--font-display);
+  font-size: var(--font-wordmark);
+  font-weight: 400;
+  color: #ffffff;
+  text-shadow: 0 0 3px var(--glow-white), 0 0 7px var(--glow-layer-1),
+    0 0 15px var(--glow-layer-2), 0 0 28px var(--glow-layer-3),
+    0 0 55px var(--glow-layer-4);
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  margin: 0 0 var(--space-m);
+}
+
+/* Heading emphasis: Shrikhand + layered glow — headings/emphasis ONLY. */
+.neon-heading {
+  font-family: var(--font-body-family);
+  font-size: var(--font-heading);
+  color: #ffffff;
+  text-shadow: var(--glow-shadow);
+  line-height: 1.25;
+  margin: 0 0 var(--space-m);
+}
+
+/* Solid-neon small text: no shadow stack (readability + perf on rows). */
+.neon-text-pink {
+  color: var(--neon-pink);
+}
+.neon-text-green {
+  color: var(--neon-green-deep);
+}
+.neon-text-cyan {
+  color: var(--neon-cyan);
+}
+.neon-text-muted {
+  color: var(--text-muted);
+}
+.neon-text-danger {
+  color: var(--text-danger);
+}
+
+.text-small {
+  font-size: var(--font-small);
+}
+.text-body-small {
+  font-size: var(--font-body-small);
+}
+
+/* Buttons: pill-shaped, neon interactive language. */
+.btn {
+  display: inline-block;
+  border: 1px solid var(--border-elevated);
+  border-radius: var(--radius-pill);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--font-body-small);
+  padding: var(--space-s) var(--space-l);
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease,
+    border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn:hover {
+  border-color: var(--neon-pink);
+  color: var(--neon-pink);
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.btn-primary {
+  background: var(--neon-pink);
+  border-color: var(--neon-pink);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: var(--neon-pink-hot);
+  border-color: var(--neon-pink-hot);
+  color: #ffffff;
+  box-shadow: var(--shadow-glow-pink);
+}
+
+/* Alerts: retryable error state surface (role="alert" stays in markup). */
+.alert {
+  padding: var(--space-m);
+  border: 1px solid var(--text-danger);
+  border-radius: var(--radius-small);
+  background: var(--bg-surface);
+  color: var(--text-danger);
+}
+
+.alert h2 {
+  font-size: var(--font-heading-small);
+  color: var(--text-danger);
+  margin-bottom: var(--space-xs);
+}
+
+/* Page container. */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-xl);
+}
+
+/* --- App chrome (M003 / S03-2): header, pulse, shell, hero --- */
+
+/* Wordmark glow-pulse: a single keyframe animating text-shadow intensity
+   (the layered glow stack) between the token base and a brighter peak. */
+@keyframes glow-pulse {
+  0%,
+  100% {
+    text-shadow: 0 0 3px var(--glow-white), 0 0 7px var(--glow-layer-1),
+      0 0 15px var(--glow-layer-2), 0 0 28px var(--glow-layer-3),
+      0 0 55px var(--glow-layer-4);
+  }
+  50% {
+    text-shadow: 0 0 4px var(--glow-white), 0 0 10px var(--glow-layer-1),
+      0 0 22px var(--glow-layer-2), 0 0 40px var(--glow-layer-3),
+      0 0 78px var(--glow-layer-4);
+  }
+}
+
+.neon-pulse {
+  animation: glow-pulse 3.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-pulse {
+    animation: none;
+  }
+}
+
+/* Header bar: shared chrome above the page shell. */
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-s) var(--space-m);
+  padding-top: var(--space-l);
+  padding-bottom: var(--space-l);
+  border-bottom: 1px solid var(--border-surface);
+}
+
+/* The wordmark is a real <button> so it is keyboard-navigable; strip
+   native button chrome and the .neon-title margin (bar owns spacing).
+   No `font:` shorthand here — it would reset the .neon-title Monoton
+   family and 44px size back to the inherited body font (Shrikhand/17px). */
+.header-wordmark {
+  border: none;
+  padding: 0;
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  margin: 0;
+  cursor: pointer;
+  display: inline-block;
+}
+
+/* Ensure .neon-title's display font always beats the button reset above,
+   regardless of rule order, when both classes are applied. */
+.header-wordmark.neon-title {
+  font-family: var(--font-display);
+  font-size: var(--font-wordmark);
+  font-weight: 400;
+}
+
+.header-wordmark:hover,
+.header-wordmark:focus-visible {
+  color: var(--neon-pink-hot);
+}
+
+.header-wordmark:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-radius: var(--radius-small);
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-s) var(--space-m);
+  margin: 0;
+}
+
+.header-user {
+  color: var(--text-muted);
+}
+
+/* Page content shell below the header: reuses .container (max-width,
+   centered) with rhythm tokens instead of per-page padding duplication. */
+.page-shell {
+  padding-top: var(--space-xl);
+  padding-bottom: var(--space-2xl);
+}
+
+/* Hero tagline on Home (under the header). */
+.hero-tagline {
+  margin: 0 0 var(--space-2xl);
+}
+
+/* --- Skeletons (03-3-T3): shimmer placeholders in the same layout
+   shape as the loaded content, so nothing jumps when data lands. --- */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  border-radius: var(--radius-small);
+  background: linear-gradient(
+    90deg,
+    var(--bg-elevated) 25%,
+    var(--bg-surface) 50%,
+    var(--bg-elevated) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
+
+.skeleton-card {
+  padding: var(--space-s);
+  border: 1px solid transparent;
+  border-radius: var(--radius-card);
+}
+
+.skeleton-media {
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-small);
+}
+
+.skeleton-line {
+  height: 0.9rem;
+  margin-top: var(--space-s);
+}
+
+.skeleton-line--short {
+  width: 60%;
+}
+
+/* Track-list skeleton rows: same grid rhythm as .track-item. */
+.skeleton-track-row {
+  display: grid;
+  grid-template-columns: 48px 1fr 3.5rem;
+  align-items: center;
+  gap: var(--space-m);
+  padding: var(--space-s) var(--space-m);
+  border-bottom: 1px solid var(--border-surface);
+}
+
+.skeleton-track-row:last-child {
+  border-bottom-color: transparent;
+}
+
+.skeleton-cover {
+  width: 48px;
+  height: 48px;
+}
+
+.skeleton-track-lines {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.skeleton-year {
+  height: 0.9rem;
+  justify-self: end;
+}
+
+/* --- Empty states (03-3-T3): icon + friendly copy, softened surface. --- */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  max-width: 34rem;
+  padding: var(--space-xl);
+  border: 1px solid var(--border-elevated);
+  border-radius: var(--radius-card);
+  background: var(--bg-surface);
+}
+
+.empty-state--cta {
+  align-items: center;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.empty-state--cta .btn {
+  margin-top: var(--space-s);
+}
+
+.empty-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.empty-title {
+  margin: 0;
+  font-size: var(--font-heading-small);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.empty-sub {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+/* --- Component classes (T2: restyle only, zero behavior change) --- */
+
+.page {
+  padding: var(--space-xl);
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.alert-inline {
+  color: var(--text-danger);
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0 0 var(--space-s);
+}
+
+.header-row {
+  margin: 0 0 var(--space-m);
+}
+
+.inline-btn {
+  margin-left: var(--space-m);
+}
+
+.back-row {
+  margin: 0 0 var(--space-m);
+}
+
+/* Playlist grid: proper CSS grid — auto-fill minmax so columns reflow
+   with viewport width without JS breakpoints. */
+.playlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-m);
+}
+
+/* Playlist card: hover lift + neon pink border glow, smooth colour+scale
+   transitions (D009). Interactive card is a real <button>; the static
+   fallback keeps the same visual shell without interaction styles. */
+.playlist-card-btn,
+.playlist-card {
+  display: block;
+  padding: var(--space-s);
+  margin: 0;
+  border: 1px solid transparent;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  border-radius: var(--radius-card);
+  transition: transform 0.18s ease, border-color 0.18s ease,
+    box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.playlist-card-btn {
+  cursor: pointer;
+}
+
+.playlist-card-btn:hover {
+  border-color: var(--neon-pink);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-glow-pink);
+  transform: translateY(-3px);
+}
+
+.playlist-card-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.playlist-card-btn:focus-visible {
+  outline: none;
+  border-color: var(--neon-pink);
+  box-shadow: var(--shadow-focus);
+}
+
+/* Cover art: aspect-ratio box so covers stay square at any card width;
+   lazy loading + async decode set on the <img> in the component. */
+.playlist-card-media {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-small);
+  overflow: hidden;
+  background: var(--bg-elevated);
+}
+
+.cover-img {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-small);
+  display: block;
+  object-fit: cover;
+}
+
+.cover-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-small);
+  background: rgba(29, 185, 84, 0.13);
+  border: 1px solid rgba(29, 185, 84, 0.53);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  box-sizing: border-box;
+}
+
+.playlist-name {
+  margin: var(--space-s) 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+/* Track-count subtitle: solid neon small text — no glow stack (D008). */
+.playlist-subtitle {
+  margin: 2px 0 0;
+  color: var(--neon-pink);
+  line-height: 1.3;
+}
+
+.track-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Polished neon track row (03-3-T2): grid columns — index, cover,
+   title/artist, right-aligned year. Solid neon small text on rows,
+   no glow shadow stack (D008); hover is a soft background highlight. */
+.track-item {
+  display: grid;
+  grid-template-columns: 2rem 48px 1fr auto;
+  align-items: center;
+  gap: var(--space-m);
+  padding: var(--space-s) var(--space-m);
+  border-bottom: 1px solid var(--border-surface);
+  border-radius: var(--radius-small);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.track-item:last-child {
+  border-bottom-color: transparent;
+}
+
+.track-item:hover {
+  background: var(--bg-surface);
+  border-bottom-color: var(--neon-pink);
+}
+
+.track-index {
+  color: var(--text-muted);
+  font-size: var(--font-body-small);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.track-info {
+  min-width: 0;
+}
+
+.track-cover {
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.track-cover-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  background: rgba(29, 185, 84, 0.13);
+  border: 1px solid rgba(29, 185, 84, 0.53);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  font-size: var(--font-body-small);
+}
+
+.track-title {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Artist line: dimmed solid secondary, small — no glow (D008). */
+.track-artist {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-body-small);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Right-aligned year column: solid neon cyan, tabular so digits align. */
+.track-year {
+  color: var(--neon-cyan);
+  font-size: var(--font-body-small);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* --- Responsive breakpoints (03-3-T3) --- */
+
+/* Mobile: two-column playlist grid, track rows fold (index hidden, cover
+   shrinks), page/container padding shrinks so small screens breathe. */
+@media (max-width: 480px) {
+  .page,
+  .container {
+    padding: var(--space-m);
+  }
+
+  /* minmax(0, 1fr): the 1fr shorthand floors each track at item
+     min-content (cover image intrinsic width), which overflows ~326px
+     containers at 375px viewports. A 0 floor lets tracks shrink. */
+  .playlist-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-s);
+  }
+
+  /* Track row folds: index column hidden, cover thumb shrinks, year
+     column tightened to fit comfortably at 375px. */
+  .track-item {
+    grid-template-columns: 40px 1fr auto;
+    gap: var(--space-s);
+    padding: var(--space-xs) var(--space-s);
+  }
+
+  .track-index {
+    display: none;
+  }
+
+  .track-cover,
+  .track-cover-placeholder {
+    width: 40px;
+    height: 40px;
+  }
+
+  .track-year {
+    font-size: var(--font-small);
+  }
+
+  /* Skeleton rows fold identically so loading never reflows. */
+  .skeleton-track-row {
+    grid-template-columns: 40px 1fr 2.5rem;
+    gap: var(--space-s);
+    padding: var(--space-xs) var(--space-s);
+  }
+
+  .skeleton-cover {
+    width: 40px;
+    height: 40px;
+  }
+
+  .empty-state {
+    padding: var(--space-m);
+  }
+}
+
+/* Tablet-ish midpoint: keep auto-fill grid but relax the minmax floor so
+   the 768px viewport shows a denser grid instead of oversized cards. */
+@media (min-width: 481px) and (max-width: 900px) {
+  .playlist-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}

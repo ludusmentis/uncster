@@ -45,22 +45,12 @@ export default function Callback(): JSX.Element {
   }, []);
 
   return (
-    <main style={{ fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
-      <h1>Harlequin</h1>
+    <main className="page">
       {error ? (
-        <section
-          role="alert"
-          style={{
-            padding: '1rem',
-            border: '1px solid #c0392b',
-            borderRadius: '8px',
-            background: '#fdf0ee',
-            color: '#7b241c',
-          }}
-        >
+        <section role="alert" className="alert">
           <h2>Login failed</h2>
           <p>{error}</p>
-          <button onClick={() => window.location.replace('/')}>
+          <button className="btn" onClick={() => window.location.replace('/')}>
             Back to home
           </button>
         </section>

@@ -1,0 +1,71 @@
+{
+  "entries": [
+    {
+      "id": 1,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 1026,
+      "beforeUrl": "about:blank",
+      "afterUrl": "http://127.0.0.1:3000/",
+      "line": "#1 | browser_navigate | success | 1026ms | url=\"http://127.0.0.1:3000\" | URL changed to http://127.0.0.1:3000/; title changed to Uncster; landmarks 0→1; buttons 0→1"
+    },
+    {
+      "id": 2,
+      "tool": "browser_click",
+      "status": "success",
+      "durationMs": 146,
+      "beforeUrl": "http://127.0.0.1:3000/",
+      "afterUrl": "http://127.0.0.1:3000/",
+      "line": "#2 | browser_click | success | 146ms | selector=\"button\", x=0, y=0 | SOFT-FAIL (no observable state change) | buttons 4→1; headings changed; visible text changed | Warnings: JS: Failed to load resource: net::ERR_NAME_NOT_RESOLVED (x2)\nUse browser_get_console_logs/browser_get_network_logs for full diagnostics."
+    },
+    {
+      "id": 3,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 938,
+      "beforeUrl": "http://127.0.0.1:3000/",
+      "afterUrl": "http://127.0.0.1:3000/playlist/pl-1",
+      "line": "#3 | browser_navigate | success | 938ms | url=\"http://127.0.0.1:3000/playlist/pl-1\" | URL changed to http://127.0.0.1:3000/playlist/pl-1; headings changed; visible text changed | Warnings: JS: Failed to load resource: net::ERR_NAME_NOT_RESOLVED (x4)\nUse browser_get_console_logs/browser_get_network_logs for full diagnostics."
+    },
+    {
+      "id": 4,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 936,
+      "beforeUrl": "http://127.0.0.1:3000/playlist/pl-1",
+      "afterUrl": "http://127.0.0.1:3000/callback",
+      "line": "#4 | browser_navigate | success | 936ms | url=\"http://127.0.0.1:3000/callback\" | URL changed to http://127.0.0.1:3000/callback; landmarks 1→2; headings changed; visible text changed | Warnings: JS: Failed to load resource: net::ERR_NAME_NOT_RESOLVED (x2)\nUse browser_get_console_logs/browser_get_network_logs for full diagnostics."
+    },
+    {
+      "id": 5,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 938,
+      "beforeUrl": "http://127.0.0.1:3000/callback",
+      "afterUrl": "http://127.0.0.1:3000/playlist/pl-1",
+      "line": "#5 | browser_navigate | success | 938ms | url=\"http://127.0.0.1:3000/playlist/pl-1\" | URL changed to http://127.0.0.1:3000/playlist/pl-1; landmarks 2→1; headings changed; visible text changed"
+    },
+    {
+      "id": 6,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 959,
+      "beforeUrl": "http://127.0.0.1:3000/playlist/pl-1",
+      "afterUrl": "http://127.0.0.1:3000/",
+      "line": "#6 | browser_navigate | success | 959ms | url=\"http://127.0.0.1:3000\" | URL changed to http://127.0.0.1:3000/; buttons 1→4; headings changed; visible text changed"
+    },
+    {
+      "id": 7,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 933,
+      "beforeUrl": "http://127.0.0.1:3000/playlist/pl-1",
+      "afterUrl": "http://127.0.0.1:3000/",
+      "line": "#7 | browser_navigate | success | 933ms | url=\"http://127.0.0.1:3000\" | URL changed to http://127.0.0.1:3000/; buttons 1→4; headings changed; visible text changed"
+    }
+  ],
+  "retained": 7,
+  "totalRecorded": 7,
+  "bounded": false,
+  "summary": "Timeline: 7 browser actions recorded."
+}

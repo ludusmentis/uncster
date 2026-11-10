@@ -27,6 +27,8 @@ export interface SpotifyPlaylist {
   id: string;
   name: string;
   images: SpotifyImage[];
+  /** Present on /v1/me/playlists items; used for the card subtitle. */
+  tracks?: { total: number };
 }
 
 export interface SpotifyPaged<T> {

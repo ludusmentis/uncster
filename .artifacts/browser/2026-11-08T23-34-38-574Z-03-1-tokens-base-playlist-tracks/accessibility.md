@@ -1,0 +1,13 @@
+- main:
+  - paragraph:
+    - button "← Back to playlists"
+  - heading "Playlist tracks" [level=1]
+  - list:
+    - listitem:
+      - img "Neon Dreams has no cover art": 🎵
+      - paragraph: Neon Dreams
+      - paragraph: Synthwave Surfer · 2024
+    - listitem:
+      - img "Pink Static has no cover art": 🎵
+      - paragraph: Pink Static
+      - paragraph: VHS Ghost · 2023

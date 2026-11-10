@@ -19,32 +19,49 @@ export default function PlaylistGrid({
   onOpenPlaylist?: (id: string) => void;
 }): JSX.Element {
   if (loading) {
-    return <p role="status">Loading your playlists…</p>;
+    // Shimmer skeletons in the same grid shape as the loaded cards, so the
+    // layout never jumps when data arrives (03-3-T3).
+    return (
+      <div
+        className="playlist-grid"
+        role="status"
+        aria-label="Loading your playlists"
+      >
+        {Array.from({ length: 8 }, (_, i) => (
+          <div className="skeleton-card" key={i} aria-hidden="true">
+            <div className="skeleton skeleton-media" />
+            <div className="skeleton skeleton-line" />
+            <div className="skeleton skeleton-line skeleton-line--short" />
+          </div>
+        ))}
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <section role="alert" style={{ color: '#c0392b' }}>
+      <section role="alert" className="alert">
         <p>{error}</p>
-        <button onClick={onRetry}>Try again</button>
+        <button className="btn" onClick={onRetry}>Try again</button>
       </section>
     );
   }
 
   if (playlists.length === 0) {
     return (
-      <p role="status">No playlists yet — create one in Spotify and it will show up here.</p>
+      <section className="empty-state" role="status">
+        <span className="empty-icon" aria-hidden="true">🎧</span>
+        <p className="empty-title">It's giving… nothing rn</p>
+        <p className="empty-sub">
+          No playlists yet. Save one in Spotify and it'll slide into your
+          library here, no cap.
+        </p>
+      </section>
     );
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '1rem',
-      }}
-    >
+    <div className="playlist-grid">
       {playlists.map((playlist) => (
         <PlaylistCard
           key={playlist.id}

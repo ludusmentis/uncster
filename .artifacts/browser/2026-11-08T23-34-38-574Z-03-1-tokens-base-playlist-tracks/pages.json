@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1,
+    "title": "Uncster",
+    "url": "http://127.0.0.1:3000/playlist/pl-1",
+    "opener": null,
+    "isActive": true
+  }
+]

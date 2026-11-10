@@ -49,24 +49,48 @@ export default function PlaylistTracks({ id }: { id: string }): JSX.Element {
   }, [id, retryCount]);
 
   return (
-    <main style={{ fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
-      <p style={{ margin: '0 0 1rem' }}>
-        <button onClick={() => navigate('/')}>← Back to playlists</button>
+    <main className="page">
+      <p className="back-row">
+        <button className="btn" onClick={() => navigate('/')}>← Back to playlists</button>
       </p>
-      <h1>Playlist tracks</h1>
+      <h1 className="neon-heading">Playlist tracks</h1>
       {loading ? (
-        <p role="status">Loading tracks…</p>
+        // Shimmer skeleton rows in the same grid shape as the loaded rows
+        // (03-3-T3) — layout stays stable when data lands.
+        <div role="status" aria-label="Loading tracks" className="track-list">
+          {Array.from({ length: 8 }, (_, i) => (
+            <div
+              className="skeleton-track-row"
+              key={i}
+              aria-hidden="true"
+            >
+              <div className="skeleton skeleton-cover" />
+              <div className="skeleton-track-lines">
+                <div className="skeleton skeleton-line" />
+                <div className="skeleton skeleton-line skeleton-line--short" />
+              </div>
+              <div className="skeleton skeleton-year" />
+            </div>
+          ))}
+        </div>
       ) : error ? (
-        <section role="alert" style={{ color: '#c0392b' }}>
+        <section role="alert" className="alert">
           <p>{error}</p>
-          <button onClick={() => setRetryCount((n) => n + 1)}>
+          <button className="btn" onClick={() => setRetryCount((n) => n + 1)}>
             Try again
           </button>
         </section>
       ) : tracks.length === 0 ? (
-        <p role="status">No tracks in this playlist yet.</p>
+        <section className="empty-state" role="status">
+          <span className="empty-icon" aria-hidden="true">✨</span>
+          <p className="empty-title">Blank canvas energy</p>
+          <p className="empty-sub">
+            No tracks in this playlist yet. Add some bangers in Spotify and
+            they'll pop up here.
+          </p>
+        </section>
       ) : (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
+        <ul className="track-list">
           {tracks.map((item, index) => {
             const track = item.item;
             const cover = track?.album?.images?.find((img) => img.url)?.url;
@@ -77,21 +101,20 @@ export default function PlaylistTracks({ id }: { id: string }): JSX.Element {
             return (
               <li
                 key={`${track?.id ?? 'unavailable'}-${index}`}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.5rem 0',
-                  borderBottom: '1px solid #eee',
-                }}
+                className="track-item"
               >
+                <span className="track-index" aria-hidden="true">
+                  {index + 1}
+                </span>
                 {track && cover ? (
                   <img
                     src={cover}
                     alt={`${track.name} cover art`}
                     width={48}
                     height={48}
-                    style={{ borderRadius: 4, objectFit: 'cover' }}
+                    loading="lazy"
+                    decoding="async"
+                    className="track-cover"
                   />
                 ) : (
                   <div
@@ -101,29 +124,18 @@ export default function PlaylistTracks({ id }: { id: string }): JSX.Element {
                         : 'Unavailable track'
                     }
                     role="img"
-                    style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 4,
-                      background: '#1db95422',
-                      border: '1px solid #1db95488',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      boxSizing: 'border-box',
-                    }}
+                    className="track-cover-placeholder"
                   >
                     🎵
                   </div>
                 )}
-                <div>
-                  <p style={{ margin: 0, fontWeight: 600 }}>
+                <div className="track-info">
+                  <p className="track-title">
                     {track ? track.name : 'Unavailable track'}
                   </p>
-                  <p style={{ margin: 0, color: '#555' }}>
-                    {artists || '—'} · {releaseYear(item)}
-                  </p>
+                  <p className="track-artist">{artists || '—'}</p>
                 </div>
+                <span className="track-year">{releaseYear(item)}</span>
               </li>
             );
           })}

@@ -1,0 +1,17 @@
+- main:
+  - heading "Uncster" [level=1]
+  - paragraph:
+    - text: Signed in as
+    - strong: Mock Listener
+    - text: . 🎧
+    - button "Log out"
+  - heading "Your playlists" [level=2]
+  - button "Neon Nights cover art Neon Nights":
+    - img "Neon Nights cover art"
+    - paragraph: Neon Nights
+  - button "Retro Synth cover art Retro Synth":
+    - img "Retro Synth cover art"
+    - paragraph: Retro Synth
+  - button "Funk Machine has no cover art Funk Machine":
+    - img "Funk Machine has no cover art": 🎵
+    - paragraph: Funk Machine

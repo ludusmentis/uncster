@@ -1,0 +1,65 @@
+/* Uncster design tokens: dark grey base + neon palette (M003 context, Q4). */
+
+:root {
+  /* Dark grey scale */
+  --bg-page: #141414;
+  --bg-surface: #1d1d1d;
+  --bg-elevated: #262626;
+  --border-surface: #333333;
+  --border-elevated: #404040;
+
+  /* Neon palette */
+  --neon-pink: #ff007f;
+  --neon-pink-hot: #ff1493;
+  --neon-pink-deep: #b30059;
+  --neon-green: #39ff14;
+  --neon-green-deep: #1db954;
+  --neon-cyan: #00e5ff;
+
+  /* Pink glow layers (wordmark / heading emphasis) */
+  --glow-white: #ffffff;
+  --glow-layer-1: #ff007f;
+  --glow-layer-2: #ff007f;
+  --glow-layer-3: #ff1493;
+  --glow-layer-4: #b30059;
+  --glow-shadow: 0 0 3px #ffffff, 0 0 7px #ff007f, 0 0 15px #ff007f,
+    0 0 28px #ff1493, 0 0 55px #b30059;
+
+  /* Text colours */
+  --text-primary: #f5f5f5;
+  --text-muted: #b3b3b3;
+  --text-dim: #808080;
+  --text-danger: #ff5f6d;
+  --text-success: var(--neon-green);
+
+  /* Radius */
+  --radius-pill: 999px;
+  --radius-card: 12px;
+  --radius-small: 8px;
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-s: 0.5rem;
+  --space-m: 1rem;
+  --space-l: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+
+  /* Shadows */
+  --shadow-card: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --shadow-card-hover: 0 10px 24px rgba(0, 0, 0, 0.6);
+  --shadow-glow-pink: 0 0 12px rgba(255, 0, 127, 0.45);
+  --shadow-focus: 0 0 0 3px rgba(255, 0, 127, 0.55);
+
+  /* Font-size scale (M003 context Q sizes) */
+  --font-wordmark: 44px;
+  --font-heading: 30px;
+  --font-heading-small: 28px;
+  --font-body: 17px;
+  --font-body-small: 15px;
+  --font-small: 14px;
+
+  /* Fonts */
+  --font-display: 'Monoton', cursive;
+  --font-body-family: 'Shrikhand', cursive;
+}
