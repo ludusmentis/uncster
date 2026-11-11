@@ -20,6 +20,7 @@ vi.hoisted(() => {
   env.VITE_SPOTIFY_CLIENT_ID ??= 'test-client-id';
 });
 import { authedFetch, NotConnectedError } from './authedFetch';
+import { logout } from './auth';
 import { loadTokens, saveTokens, clearTokens, type StoredTokens } from '../auth/tokenStore';
 import { getAuthState, subscribeAuth, type AuthState } from '../auth/AuthContext';
 import { RefreshTokenError } from '../auth/spotifyAuth';
@@ -52,6 +53,14 @@ describe('authedFetch', () => {
       setItem: (k: string, v: string) => void storage.set(k, v),
       removeItem: (k: string) => void storage.delete(k),
       clear: () => void storage.clear(),
+    });
+    // logout() → clearLoginSession() touches sessionStorage.
+    const session = new Map<string, string>();
+    vi.stubGlobal('sessionStorage', {
+      getItem: (k: string) => session.get(k) ?? null,
+      setItem: (k: string, v: string) => void session.set(k, v),
+      removeItem: (k: string) => void session.delete(k),
+      clear: () => void session.clear(),
     });
     saveTokens(storedTokens());
     authEvents = [];
@@ -196,6 +205,48 @@ describe('authedFetch', () => {
     expect(res.status).toBe(401);
     // 1 API + 1 refresh + 1 retry = 3, then stops (no loop).
     expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it('logout during an in-flight refresh must not resurrect the session (ghost-session race)', async () => {
+    // Deterministic deferred for the token POST so we can log out while the
+    // refresh is genuinely in flight (MEM005 reproduction).
+    let resolveTokenPost: ((body: unknown) => void) | null = null;
+    fetchMock = vi.fn().mockImplementation(async (url: RequestInfo | URL) => {
+      if (String(url) === TOKEN_URL) {
+        return new Promise<Response>((resolve) => {
+          resolveTokenPost = (body: unknown) => resolve(jsonResponse(200, body));
+        });
+      }
+      return jsonResponse(401, { error: 'invalid token' });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+
+    const pending = authedFetch(API_URL);
+    // Let the API call 401 and the (deferred) refresh POST start.
+    await vi.waitFor(() => {
+      expect(fetchMock.mock.calls.some((c) => String(c[0]) === TOKEN_URL)).toBe(
+        true,
+      );
+    });
+
+    // Logout mid-flight: clears tokens + resets the flight pointer.
+    logout();
+    expect(loadTokens()).toBeNull();
+
+    // The in-flight refresh now resolves with a valid payload…
+    ((resolveTokenPost as unknown) as (body: unknown) => void)({
+      access_token: 'ghost-token',
+      refresh_token: 'refresh-2',
+      expires_in: 3600,
+    });
+
+    // …but must NOT re-persist a session: the race window in which the
+    // still-running refreshAccessToken calls saveTokens after logout.
+    await expect(pending).rejects.toBeInstanceOf(Error);
+    expect(loadTokens()).toBeNull();
+    expect(getAuthState().status).toBe('disconnected');
   });
 
   it('network failure during refresh is wrapped as RefreshTokenError and wipes tokens', async () => {

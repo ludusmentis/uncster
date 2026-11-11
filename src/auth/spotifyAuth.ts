@@ -16,7 +16,17 @@ import { saveTokens, type StoredTokens } from './tokenStore';
 const AUTHORIZE_URL = 'https://accounts.spotify.com/authorize';
 const TOKEN_URL = 'https://accounts.spotify.com/api/token';
 const REDIRECT_URI = 'http://127.0.0.1:3000/callback';
-const SCOPES = ['playlist-read-private'];
+// All scopes the app requests at login. Playback scopes (M005) added alongside
+// the original playlist scope; user-read-email/user-read-private are required
+// by the Web Playback SDK for device registration.
+export const SCOPES = [
+  'playlist-read-private',
+  'streaming',
+  'user-read-email',
+  'user-read-private',
+  'user-modify-playback-state',
+  'user-read-playback-state',
+];
 
 const VERIFIER_KEY = 'harlequin.pkce.verifier';
 const STATE_KEY = 'harlequin.pkce.state';

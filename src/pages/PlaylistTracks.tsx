@@ -1,10 +1,87 @@
 import { useEffect, useState } from 'react';
 import { navigate } from '../routing';
+import { usePlayer } from '../playback/PlayerProvider';
+import { playTrack } from '../playback/playTrack';
 import {
   fetchAllPlaylistTracks,
   releaseYear,
   type SpotifyTrackItem,
+  type SpotifyTrack,
 } from '../api/tracks';
+
+/**
+ * Cover art as a play/pause control (M005 / S03-T2).
+ *
+ * Both real cover art and the 🎵 placeholder (D013) are clickable play
+ * surfaces; only item.track === null rows are non-interactive (rendered
+ * by the caller without this wrapper). Overlay state derives from the
+ * PlayerProvider context (D012): ▶ when this track is not the playing
+ * one, ⏸ when it is; while the device is not ready the control is a
+ * logged no-op with a connecting hint.
+ */
+function CoverArtButton({
+  track,
+  cover,
+  isReady,
+  isCurrentPlaying,
+  onPlay,
+  onToggle,
+}: {
+  track: SpotifyTrack;
+  cover: string | undefined;
+  isReady: boolean;
+  isCurrentPlaying: boolean;
+  onPlay: () => void;
+  onToggle: () => void;
+}): JSX.Element {
+  const handleClick = () => {
+    if (!isReady) {
+      // Connecting hint: the surface stays visible but inert so the user
+      // understands playback is coming, not broken (logged for
+      // observability).
+      console.info('[tracks] playback click ignored — player not ready');
+      return;
+    }
+    if (isCurrentPlaying) onToggle();
+    else onPlay();
+  };
+
+  return (
+    <button
+      type="button"
+      className={
+        isCurrentPlaying
+          ? 'track-cover-btn track-cover-btn--playing'
+          : 'track-cover-btn'
+      }
+      aria-label={
+        isCurrentPlaying ? `Pause ${track.name}` : `Play ${track.name}`
+      }
+      title={isReady ? undefined : 'Connecting to Spotify…'}
+      aria-disabled={!isReady}
+      onClick={handleClick}
+    >
+      {cover ? (
+        <img
+          src={cover}
+          alt=""
+          width={48}
+          height={48}
+          loading="lazy"
+          decoding="async"
+          className="track-cover"
+        />
+      ) : (
+        <span aria-hidden="true" className="track-cover track-cover-placeholder">
+          🎵
+        </span>
+      )}
+      <span className="track-overlay" aria-hidden="true">
+        {isCurrentPlaying ? '⏸' : '▶'}
+      </span>
+    </button>
+  );
+}
 
 /**
  * Playlist tracks view (M002 / S02, R004): renders all tracks of one
@@ -14,8 +91,20 @@ import {
  * fetch after Back can never set state; non-abort failures land in a
  * retryable error state (R005). No auth gate here — Home gates the grid,
  * and a failed silent refresh mid-browse flips Home via AuthContext.
+ *
+ * S03-T2: cover art (or the 🎵 placeholder, D013) starts playback on our
+ * Connect device via playTrack; clicking the playing track toggles pause /
+ * resume. All overlay state comes from usePlayer() (D012).
  */
 export default function PlaylistTracks({ id }: { id: string }): JSX.Element {
+  const {
+    deviceId,
+    isReady,
+    isPaused,
+    currentTrack,
+    activateElement,
+    togglePlay,
+  } = usePlayer();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -116,23 +205,43 @@ export default function PlaylistTracks({ id }: { id: string }): JSX.Element {
                 <span className="track-index" aria-hidden="true">
                   {index + 1}
                 </span>
-                {track && cover ? (
-                  <img
-                    src={cover}
-                    alt={`${track.name} cover art`}
-                    width={48}
-                    height={48}
-                    loading="lazy"
-                    decoding="async"
-                    className="track-cover"
+                {track ? (
+                  <CoverArtButton
+                    track={track}
+                    cover={cover}
+                    isReady={isReady}
+                    isCurrentPlaying={
+                      !!currentTrack &&
+                      // Relinked tracks (regional/availability variants) play
+                      // under a different URI than the playlist row's; the
+                      // SDK reports the original via linked_from.
+                      (currentTrack.linked_from?.uri ?? currentTrack.uri) ===
+                        track.uri &&
+                      !isPaused
+                    }
+                    onPlay={() => {
+                      // Autoplay unlock must live in the click handler (S03-T1
+                      // contract) before the Connect API call.
+                      activateElement();
+                      if (!track.uri) {
+                        console.warn(
+                          '[tracks] track has no uri — cannot start playback',
+                          track.id,
+                        );
+                        return;
+                      }
+                      playTrack(track.uri, deviceId).catch((err: unknown) => {
+                        console.error('[tracks] failed to start playback', err);
+                      });
+                    }}
+                    onToggle={() => {
+                      activateElement();
+                      togglePlay();
+                    }}
                   />
                 ) : (
                   <div
-                    aria-label={
-                      track
-                        ? `${track.name} has no cover art`
-                        : 'Unavailable track'
-                    }
+                    aria-label="Unavailable track"
                     role="img"
                     className="track-cover-placeholder"
                   >

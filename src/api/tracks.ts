@@ -28,6 +28,8 @@ export interface SpotifyImage {
 export interface SpotifyTrack {
   id: string;
   name: string;
+  /** Spotify track URI (spotify:track:...) — present in API payloads. */
+  uri?: string;
   artists: { id: string; name: string }[];
   album: {
     images: SpotifyImage[];

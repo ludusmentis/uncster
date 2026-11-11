@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Home from './pages/Home';
 import Callback from './pages/Callback';
 import PlaylistTracks from './pages/PlaylistTracks';
@@ -15,8 +15,11 @@ import {
   getAuthState,
   subscribeAuth,
 } from './auth/AuthContext';
+import { PremiumGate, AccountErrorWatcher } from './components/PremiumGate';
 import { fetchCurrentUser } from './api/user';
 import { logout } from './api/auth';
+import { PlayerProvider } from './playback/PlayerProvider';
+import { disconnectPlayer } from './playback/useSpotifyPlayer';
 
 /**
  * App shell (M003 / S03-2, T2): every route shares the same chrome —
@@ -33,6 +36,10 @@ export default function App(): JSX.Element {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [profileRetryCount, setProfileRetryCount] = useState(0);
+  // Premium gate (M005 / S02-T4, D014): null = unknown yet (checking or
+  // unauthed), true = product !== 'premium' or SDK account_error backstop.
+  const [premiumBlocked, setPremiumBlocked] = useState(false);
+  const [accountError, setAccountError] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = subscribeRoute((next) => setPath(next));
@@ -62,17 +69,25 @@ export default function App(): JSX.Element {
   // Load the signed-in user's display name (GET /v1/me) for the header.
   // A profile failure is non-fatal: the header falls back to the generic
   // signed-in label with a retryable inline error surfaced on Home.
+  // Premium gate (D014): a non-premium `product` blocks the whole app.
   useEffect(() => {
     if (!authed) {
       setDisplayName(null);
       setProfileError(null);
+      setPremiumBlocked(false);
+      setAccountError(null);
       return;
     }
     let cancelled = false;
     setProfileError(null);
     fetchCurrentUser()
       .then((user) => {
-        if (!cancelled) setDisplayName(user.display_name ?? user.id);
+        if (cancelled) return;
+        setDisplayName(user.display_name ?? user.id);
+        if (user.product !== 'premium') {
+          console.warn('[premium-gate] non-premium product:', user.product);
+          setPremiumBlocked(true);
+        }
       })
       .catch((err: unknown) => {
         if (cancelled) return;
@@ -96,11 +111,31 @@ export default function App(): JSX.Element {
   // the next visit starts a fresh login. The subscribeAuth listener flips
   // the chrome back to the Connect entry point.
   const handleLogout = (): void => {
+    // S01-T3 ordering contract: kill the SDK Connect device BEFORE wiping
+    // tokens, so a lingering SDK token callback cannot resurrect a ghost
+    // session (it sees no tokens and emits disconnected instead).
+    disconnectPlayer();
     logout();
     setAuthed(false);
     setEverConnected(false);
     setDisplayName(null);
+    setPremiumBlocked(false);
+    setAccountError(null);
   };
+
+  // Premium gate (D014): fully blocking — replaces routes and chrome with
+  // the PremiumGate screen. The SDK account_error backstop (AccountErrorWatcher
+  // inside PlayerProvider below) flips premiumBlocked for raced logins or
+  // mid-session downgrades even after a passed profile check.
+  const handleAccountError = useCallback((message: string): void => {
+    setAccountError(message);
+    setPremiumBlocked(true);
+  }, []);
+
+  if (premiumBlocked) {
+    console.error('[premium-gate] blocking app:', accountError ?? 'non-premium account');
+    return <PremiumGate onLogout={handleLogout} />;
+  }
 
   const route = parseRoute(path);
 
@@ -140,7 +175,16 @@ export default function App(): JSX.Element {
         onConnect={handleConnect}
         onLogout={handleLogout}
       />
-      <PageShell>{content}</PageShell>
+      <PageShell>
+        {/* App-level player singleton keyed on authed (D012): the Connect
+            device persists across routes and disconnects on logout. */}
+        <PlayerProvider authed={authed}>
+          {/* Premium gate backstop (D014): routes SDK account_error to the
+              blocking screen. No-op while unauthed (player disabled). */}
+          <AccountErrorWatcher onAccountError={handleAccountError} />
+          {content}
+        </PlayerProvider>
+      </PageShell>
     </>
   );
 }

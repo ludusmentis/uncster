@@ -7,6 +7,11 @@
  * - any in-flight silent-refresh promise via resetRefreshFlight()
  * and emits a disconnected auth state so the UI resets to a fresh
  * PKCE login on the next visit.
+ *
+ * Teardown hook for S02 (Web Playback SDK): call player.disconnect() first,
+ * then logout() — clearing the refresh flight here guarantees a lingering
+ * SDK token callback cannot resurrect a ghost session (it will see no tokens
+ * and emit disconnected instead).
  */
 
 import { clearTokens } from '../auth/tokenStore';

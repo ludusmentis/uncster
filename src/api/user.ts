@@ -13,6 +13,8 @@ export interface SpotifyUser {
   id: string;
   /** May be null per Spotify's docs (rare in practice). */
   display_name: string | null;
+  /** Subscription tier ('premium', 'free', ...). Present with user-read-private (S01-T1). */
+  product: string | null;
 }
 
 export class FetchUserError extends Error {

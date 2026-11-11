@@ -524,6 +524,55 @@ p {
   min-width: 0;
 }
 
+/* Cover-art play/pause control (S03-T2): the 48px cover (or 🎵
+   placeholder, D013) is a button with a hover overlay icon — ▶ normally,
+   ⏸ while this track is playing. While the device is not ready the
+   control is dimmed with a connecting hint (aria-disabled). */
+.track-cover-btn {
+  position: relative;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+  width: 48px;
+  height: 48px;
+}
+
+.track-cover-btn:focus-visible {
+  outline: 2px solid var(--neon-pink);
+  outline-offset: 2px;
+}
+
+.track-cover-btn[aria-disabled='true'] {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.track-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-body-large, 1.1rem);
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.track-cover-btn:hover .track-overlay,
+.track-cover-btn:focus-visible .track-overlay {
+  opacity: 1;
+}
+
+.track-cover-btn--playing .track-overlay {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.25);
+}
+
 .track-cover {
   width: 48px;
   height: 48px;

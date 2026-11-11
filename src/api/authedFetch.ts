@@ -17,6 +17,7 @@
 import { refreshAccessToken } from '../auth/spotifyAuth';
 import {
   clearTokens,
+  hasUsableAccessToken,
   loadTokens,
   type StoredTokens,
 } from '../auth/tokenStore';
@@ -27,11 +28,34 @@ export class NotConnectedError extends Error {}
 /** Single-flight refresh: all concurrent 401 callers await this promise. */
 let refreshInFlight: Promise<StoredTokens> | null = null;
 
+/**
+ * Logout epoch (MEM005 ghost-session guard): resetRefreshFlight() bumps this,
+ * so a refresh that was already in flight when logout() ran can detect the
+ * session ended and refuse to re-persist tokens.
+ */
+let refreshEpoch = 0;
+
 function singleFlightRefresh(refreshToken: string): Promise<StoredTokens> {
   if (!refreshInFlight) {
+    const epoch = refreshEpoch;
     console.info('[auth:refresh] access token rejected (401) — attempting silent refresh');
     refreshInFlight = refreshAccessToken(refreshToken)
       .then((tokens) => {
+        if (epoch !== refreshEpoch) {
+          // Logout happened mid-flight: discard the result so the still-running
+          // refresh cannot resurrect a session (MEM005). Do NOT emit
+          // disconnected here — logout() already did.
+          console.info(
+            '[auth:refresh] session ended mid-refresh — discarding result',
+          );
+          clearTokens();
+          throw new NotConnectedError('Spotify session ended during token refresh.');
+        }
+        if (loadTokens() === null) {
+          // Belt-and-braces: tokens vanished while we were refreshing.
+          clearTokens();
+          throw new NotConnectedError('Spotify session ended during token refresh.');
+        }
         console.info('[auth:refresh] silent refresh succeeded');
         return tokens;
       })
@@ -54,7 +78,51 @@ async function attachTokenAndFetch(
 
 /** Reset the single-flight refresh slot (logout clears session state). */
 export function resetRefreshFlight(): void {
+  refreshEpoch++;
   refreshInFlight = null;
+}
+
+/**
+ * Single-flight silent refresh with shared failure handling: on refresh
+ * failure, wipes stored tokens and emits a disconnected auth state.
+ */
+async function refreshOrDisconnect(
+  refreshToken: string,
+): Promise<StoredTokens> {
+  try {
+    return await singleFlightRefresh(refreshToken);
+  } catch (err) {
+    console.warn(
+      '[auth:refresh] silent refresh failed — wiping stored tokens and disconnecting',
+      err,
+    );
+    clearTokens();
+    emitAuthDisconnected(
+      err instanceof Error ? err.message : 'Token refresh failed.',
+    );
+    throw err;
+  }
+}
+
+/**
+ * On-demand access token for the Web Playback SDK's getToken callback
+ * (M005 / S01-T2). Returns the stored token when still usable; otherwise
+ * triggers the same single-flight silent refresh the API wrapper uses, so
+ * concurrent SDK token requests share exactly one refresh. NotConnectedError
+ * when no session is stored; refresh failures wipe tokens and disconnect,
+ * mirroring authedFetch's 401 path.
+ */
+export async function getToken(): Promise<string> {
+  const tokens = loadTokens();
+  if (!tokens) {
+    emitAuthDisconnected('No stored Spotify session.');
+    throw new NotConnectedError('Not connected to Spotify.');
+  }
+  if (hasUsableAccessToken(tokens)) {
+    return tokens.accessToken;
+  }
+  const fresh = await refreshOrDisconnect(tokens.refreshToken);
+  return fresh.accessToken;
 }
 
 /**
@@ -79,19 +147,7 @@ export async function authedFetch(
     return response;
   }
 
-  try {
-    tokens = await singleFlightRefresh(tokens.refreshToken);
-  } catch (err) {
-    console.warn(
-      '[auth:refresh] silent refresh failed — wiping stored tokens and disconnecting',
-      err,
-    );
-    clearTokens();
-    emitAuthDisconnected(
-      err instanceof Error ? err.message : 'Token refresh failed.',
-    );
-    throw err;
-  }
+  tokens = await refreshOrDisconnect(tokens.refreshToken);
 
   // Single retry with the fresh token; a second 401 is returned to the
   // caller as-is (no retry loop).

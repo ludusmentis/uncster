@@ -119,7 +119,7 @@ window.fetch = ((
     return slow(jsonResponse({ items: playlists, next: null, total: playlists.length, limit: 50, offset: 0 }));
   }
   if (url.startsWith('https://api.spotify.com/v1/me')) {
-    return Promise.resolve(jsonResponse({ id: 'u1', display_name: 'Mock User' }));
+    return Promise.resolve(jsonResponse({ id: 'u1', display_name: 'Mock User', product: 'premium' }));
   }
   if (/^https:\/\/api\.spotify\.com\/v1\/playlists\/[^/]+$/.test(url)) {
     // Game-setup UAT fixture (M004 / S03-T6): GET /v1/playlists/{id} must
@@ -163,7 +163,7 @@ window.fetch = ((
 // unless 'uat.unauthed' asks for the signed-out Home CTA state.
 if (localStorage.getItem('uat.unauthed') !== '1') {
 localStorage.setItem(
-  'harlequin.spotify.tokens',
+  'harlequin.spotify.tokens.v2',
   JSON.stringify({
     accessToken: 'mock-access-token',
     refreshToken: 'mock-refresh-token',
