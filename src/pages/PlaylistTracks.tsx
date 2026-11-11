@@ -53,6 +53,16 @@ export default function PlaylistTracks({ id }: { id: string }): JSX.Element {
       <p className="back-row">
         <button className="btn" onClick={() => navigate('/')}>← Back to playlists</button>
       </p>
+      {/* S02-T3: entry point to the game-setup view — sits above the whole
+          playlist (all states) and needs only the id prop, never tracks. */}
+      <p className="back-row">
+        <button
+          className="btn btn-primary"
+          onClick={() => navigate(`/setup/${encodeURIComponent(id)}`)}
+        >
+          🎮 Play with this playlist
+        </button>
+      </p>
       <h1 className="neon-heading">Playlist tracks</h1>
       {loading ? (
         // Shimmer skeleton rows in the same grid shape as the loaded rows

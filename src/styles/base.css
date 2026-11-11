@@ -43,7 +43,7 @@ p {
   margin: 0 0 var(--space-m);
 }
 
-/* Heading emphasis: Shrikhand + layered glow — headings/emphasis ONLY. */
+/* Heading emphasis: Righteous + layered glow — headings/emphasis ONLY. */
 .neon-heading {
   font-family: var(--font-body-family);
   font-size: var(--font-heading);
@@ -185,7 +185,7 @@ p {
 /* The wordmark is a real <button> so it is keyboard-navigable; strip
    native button chrome and the .neon-title margin (bar owns spacing).
    No `font:` shorthand here — it would reset the .neon-title Monoton
-   family and 44px size back to the inherited body font (Shrikhand/17px). */
+   family and 44px size back to the inherited body font (Righteous/17px). */
 .header-wordmark {
   border: none;
   padding: 0;
@@ -635,4 +635,115 @@ p {
   .playlist-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
+}
+
+/* --- Game setup surface (M004 / S03-T5) — plain CSS, token-only (D006/D008) --- */
+
+/* Visually hidden but screen-reader available (labels for inputs). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Text / number fields: dark surface, elevated border, neon focus ring. */
+.field {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-elevated);
+  border-radius: var(--radius-small);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--font-body-small);
+  padding: var(--space-s) var(--space-m);
+}
+
+.field:focus-visible {
+  outline: none;
+  border-color: var(--neon-pink);
+  box-shadow: var(--shadow-focus);
+}
+
+.field--num {
+  width: 5.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.setup-section {
+  margin: 0 0 var(--space-l);
+  max-width: 34rem;
+}
+
+.setup-section h2 {
+  font-size: var(--font-heading-small);
+  margin-bottom: var(--space-s);
+}
+
+.setup-add-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-s);
+  margin-bottom: var(--space-s);
+}
+
+.setup-add-row label {
+  color: var(--text-muted);
+}
+
+.setup-players {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.setup-player {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-m);
+  padding: var(--space-xs) 0;
+  border-bottom: 1px solid var(--border-surface);
+}
+
+.setup-player:last-child {
+  border-bottom-color: transparent;
+}
+
+/* Advisory short-playlist banner: warning amber-cyan, deliberately NOT
+   the danger-red .alert (it must read as non-blocking). */
+.alert--warning {
+  border-color: var(--neon-cyan);
+  color: var(--text-primary);
+  background: rgba(0, 229, 255, 0.08);
+  max-width: 34rem;
+}
+
+.alert--warning p {
+  margin: 0;
+}
+
+/* Disabled Start Game keeps its shape but reads as inert. */
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn:disabled:hover {
+  border-color: var(--border-elevated);
+  color: inherit;
+  background: var(--bg-elevated);
+  box-shadow: none;
+}
+
+.btn-primary:disabled {
+  background: var(--neon-pink-deep);
+  border-color: var(--neon-pink-deep);
+  color: #ffffff;
 }

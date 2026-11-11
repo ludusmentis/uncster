@@ -121,6 +121,35 @@ window.fetch = ((
   if (url.startsWith('https://api.spotify.com/v1/me')) {
     return Promise.resolve(jsonResponse({ id: 'u1', display_name: 'Mock User' }));
   }
+  if (/^https:\/\/api\.spotify\.com\/v1\/playlists\/[^/]+$/.test(url)) {
+    // Game-setup UAT fixture (M004 / S03-T6): GET /v1/playlists/{id} must
+    // answer with playlist metadata including tracks.total small enough
+    // (10) that 2 players x 15 songs triggers the short-playlist warning.
+    if (url.endsWith('/v1/playlists/pl-1')) {
+      return slow(
+        jsonResponse({
+          id: 'pl-1',
+          name: 'Mock Playlist One',
+          tracks: { total: 10 },
+        }),
+      );
+    }
+    // Any other single-playlist GET is answered from the playlist array
+    // so the harness never makes a live Spotify call (P007 zero-live
+    // guarantee); unknown ids 404 like the API would.
+    const plId = url.split('/v1/playlists/')[1] || '';
+    const found = playlists.find((p) => p.id === plId);
+    if (!found) {
+      return slow(jsonResponse({ error: { status: 404, message: 'Playlist not found' } }, 404));
+    }
+    return slow(
+      jsonResponse({
+        id: found.id,
+        name: found.name,
+        tracks: { total: found.tracks.total },
+      }),
+    );
+  }
   if (/^https:\/\/api\.spotify\.com\/v1\/playlists\/[^/]+\/items/.test(url)) {
     if (url.includes('/v1/playlists/pl-empty/items')) {
       return slow(jsonResponse({ items: [], next: null, total: 0, limit: 100, offset: 0 }));

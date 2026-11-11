@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import Home from './pages/Home';
 import Callback from './pages/Callback';
 import PlaylistTracks from './pages/PlaylistTracks';
+import GameSetup from './pages/GameSetup';
+import MockGame from './pages/MockGame';
 import Header from './components/Header';
 import PageShell from './components/PageShell';
 import { parseRoute, subscribeRoute } from './routing';
@@ -109,6 +111,12 @@ export default function App(): JSX.Element {
       break;
     case 'playlist':
       content = <PlaylistTracks id={route.id} />;
+      break;
+    case 'setup':
+      content = <GameSetup id={route.id} />;
+      break;
+    case 'game':
+      content = <MockGame />;
       break;
     default:
       content = (

@@ -1,0 +1,72 @@
+[
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "timestamp": 1794343422728,
+    "url": "http://localhost:3000/",
+    "pageId": 1
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "timestamp": 1794343422743,
+    "url": "http://localhost:3000/",
+    "pageId": 1
+  },
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "timestamp": 1794343422755,
+    "url": "http://localhost:3000/",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+    "timestamp": 1794343422896,
+    "url": "http://localhost:3000/",
+    "pageId": 1
+  },
+  {
+    "type": "log",
+    "text": "[vite] server connection lost. Polling for restart...",
+    "timestamp": 1794343538543,
+    "url": "http://localhost:3000/",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "timestamp": 1794343538546,
+    "url": "http://localhost:3000/",
+    "pageId": 1
+  },
+  {
+    "type": "error",
+    "text": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "timestamp": 1794343539392,
+    "url": "http://localhost:3000/",
+    "pageId": 1
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connecting...",
+    "timestamp": 1794343542988,
+    "url": "http://localhost:3000/",
+    "pageId": 1
+  },
+  {
+    "type": "debug",
+    "text": "[vite] connected.",
+    "timestamp": 1794343543026,
+    "url": "http://localhost:3000/",
+    "pageId": 1
+  },
+  {
+    "type": "info",
+    "text": "%cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold",
+    "timestamp": 1794343543080,
+    "url": "http://localhost:3000/",
+    "pageId": 1
+  }
+]

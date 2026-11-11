@@ -1,5 +1,5 @@
 /**
- * Home hero tagline (M003 / S03-2, T1): the Uncster one-liner in Shrikhand
+ * Home hero tagline (M003 / S03-2, T1): the Uncster one-liner in Righteous
  * at heading size with the neon-heading glow treatment. Rendered on Home
  * under the shared header (T2 wires it into the Home page).
  */

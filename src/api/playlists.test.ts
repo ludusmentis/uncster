@@ -10,7 +10,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   fetchAllPlaylists,
+  fetchPlaylist,
   fetchPlaylistPage,
+  FetchPlaylistError,
   FetchPlaylistsError,
   PLAYLIST_PAGE_SIZE,
   type SpotifyImage,
@@ -39,6 +41,63 @@ function page(
 function ok(body: unknown): Response {
   return new Response(JSON.stringify(body), { status: 200 });
 }
+
+describe('fetchPlaylist (single playlist metadata)', () => {
+  beforeEach(() => {
+    authedFetchMock.mockReset();
+  });
+
+  it('resolves playlist metadata with tracks.total on success', async () => {
+    authedFetchMock.mockResolvedValue(
+      ok({ id: 'pl-1', name: 'Mock Playlist One', images: [], tracks: { total: 10 } }),
+    );
+    const result = await fetchPlaylist('pl-1');
+    expect(result).toEqual({
+      id: 'pl-1',
+      name: 'Mock Playlist One',
+      images: [],
+      tracks: { total: 10 },
+    });
+  });
+
+  it('requests GET /v1/playlists/{id} with the id encoded', async () => {
+    authedFetchMock.mockResolvedValue(ok({ id: 'a b', name: 'x', images: [] }));
+    await fetchPlaylist('a b');
+    expect(authedFetchMock).toHaveBeenCalledTimes(1);
+    expect(authedFetchMock.mock.calls[0][0]).toBe(
+      'https://api.spotify.com/v1/playlists/a%20b',
+    );
+  });
+
+  it('passes the AbortSignal through to authedFetch', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    await expect(fetchPlaylist('pl-1', controller.signal)).rejects.toMatchObject({
+      name: 'AbortError',
+    });
+    expect(authedFetchMock).not.toHaveBeenCalled();
+  });
+
+  it('throws FetchPlaylistError with the status on a non-2xx response', async () => {
+    authedFetchMock.mockResolvedValue(new Response('{}', { status: 404 }));
+    await expect(fetchPlaylist('missing')).rejects.toMatchObject({
+      name: 'FetchPlaylistError',
+      status: 404,
+    });
+  });
+
+  it('throws FetchPlaylistError on malformed JSON', async () => {
+    authedFetchMock.mockResolvedValue(
+      new Response('<html>not json</html>', { status: 200 }),
+    );
+    await expect(fetchPlaylist('pl-1')).rejects.toBeInstanceOf(FetchPlaylistError);
+  });
+
+  it('propagates network-layer rejections unchanged', async () => {
+    authedFetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+    await expect(fetchPlaylist('pl-1')).rejects.toThrow('Failed to fetch');
+  });
+});
 
 describe('playlists api', () => {
   beforeEach(() => {

@@ -39,6 +39,16 @@ export interface SpotifyPaged<T> {
   offset: number;
 }
 
+export class FetchPlaylistError extends Error {
+  readonly status: number;
+
+  constructor(status: number, message?: string) {
+    super(message ?? `Failed to load playlist (HTTP ${status}).`);
+    this.name = 'FetchPlaylistError';
+    this.status = status;
+  }
+}
+
 export class FetchPlaylistsError extends Error {
   readonly status: number;
 
@@ -69,6 +79,37 @@ export async function fetchPlaylistPage(
     throw new FetchPlaylistsError(
       response.status,
       'Playlists response was not valid JSON.',
+    );
+  }
+}
+
+/**
+ * Fetch a single playlist's metadata (name + tracks.total) for the game
+ * setup view. One GET /v1/playlists/{id} instead of paginating tracks.
+ */
+export async function fetchPlaylist(
+  id: string,
+  signal?: AbortSignal,
+): Promise<SpotifyPlaylist> {
+  if (signal?.aborted) {
+    throw new DOMException('Aborted.', 'AbortError');
+  }
+  const response = await authedFetch(
+    `https://api.spotify.com/v1/playlists/${encodeURIComponent(id)}`,
+    signal ? { signal } : undefined,
+  );
+  if (!response.ok) {
+    throw new FetchPlaylistError(
+      response.status,
+      `Failed to load playlist (HTTP ${response.status}).`,
+    );
+  }
+  try {
+    return (await response.json()) as SpotifyPlaylist;
+  } catch {
+    throw new FetchPlaylistError(
+      response.status,
+      'Playlist response was not valid JSON.',
     );
   }
 }

@@ -1,0 +1,35 @@
+{
+  "entries": [
+    {
+      "id": 1,
+      "tool": "browser_navigate",
+      "status": "error",
+      "durationMs": 13,
+      "beforeUrl": "about:blank",
+      "afterUrl": "about:blank",
+      "line": "#1 | browser_navigate | error | 13ms | url=\"http://localhost:3000\" | page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "id": 2,
+      "tool": "browser_navigate",
+      "status": "error",
+      "durationMs": 6,
+      "beforeUrl": "http://localhost:3000/",
+      "afterUrl": "http://localhost:3000/",
+      "line": "#2 | browser_navigate | error | 6ms | url=\"http://localhost:3000\" | page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "id": 3,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 1335,
+      "beforeUrl": "chrome-error://chromewebdata/",
+      "afterUrl": "http://localhost:3000/",
+      "line": "#3 | browser_navigate | success | 1335ms | url=\"http://localhost:3000\" | URL changed to http://localhost:3000/; title changed to Uncster; landmarks 0→3; buttons 2→3 | Warnings: JS: Failed to load resource: net::ERR_CONNECTION_REFUSED (x2); Network: GET fetch FAILED (x2) | GET document FAILED (x2)\nUse browser_get_console_logs/browser_get_network_logs for full diagnostics."
+    }
+  ],
+  "retained": 3,
+  "totalRecorded": 3,
+  "bounded": false,
+  "summary": "Timeline: 3 browser actions recorded."
+}

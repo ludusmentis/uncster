@@ -15,6 +15,30 @@ import { describe, expect, it } from 'vitest';
 import { renderToString } from 'react-dom/server';
 import PlaylistTracks from './PlaylistTracks';
 
+describe('Play CTA above the track list (M004 / S02-T3)', () => {
+  it('renders the CTA above the heading and the loading track list', () => {
+    const html = renderToString(<PlaylistTracks id="pl-1" />);
+    expect(html).toContain('🎮 Play with this playlist');
+    expect(html).toContain('btn btn-primary');
+    const ctaAt = html.indexOf('Play with this playlist');
+    const headingAt = html.indexOf('Playlist tracks');
+    const skeletonAt = html.indexOf('skeleton-track-row');
+    expect(ctaAt).toBeGreaterThanOrEqual(0);
+    expect(headingAt).toBeGreaterThan(ctaAt);
+    expect(skeletonAt).toBeGreaterThan(headingAt);
+  });
+
+  it('renders the CTA in every state (loading-only render covers the shape)', () => {
+    // renderToString never runs effects, so only the initial loading state
+    // is observable here; error/empty/loaded states reuse the same markup
+    // above the h1, which this DOM-order assertion pins down.
+    const html = renderToString(<PlaylistTracks id="pl-1" />);
+    const backAt = html.indexOf('Back to playlists');
+    const ctaAt = html.indexOf('Play with this playlist');
+    expect(ctaAt).toBeGreaterThan(backAt);
+  });
+});
+
 describe('PlaylistTracks skeleton state (03-3-T3)', () => {
   it('renders shimmer skeleton rows while loading', () => {
     const html = renderToString(<PlaylistTracks id="pl-1" />);

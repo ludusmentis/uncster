@@ -48,6 +48,26 @@ describe('parseRoute', () => {
     expect(parseRoute('/playlist/abc')).toEqual({ name: 'playlist', id: 'abc' });
   });
 
+  it("maps '/setup/pl-1' -> setup id 'pl-1'", () => {
+    expect(parseRoute('/setup/pl-1')).toEqual({ name: 'setup', id: 'pl-1' });
+  });
+
+  it("maps '/setup/' (empty id) -> home", () => {
+    expect(parseRoute('/setup/')).toEqual({ name: 'home' });
+  });
+
+  it("decodes URL-encoded setup ids ('/setup/a%20b' -> 'a b')", () => {
+    expect(parseRoute('/setup/a%20b')).toEqual({ name: 'setup', id: 'a b' });
+  });
+
+  it("maps '/setup' (no trailing slash) -> home", () => {
+    expect(parseRoute('/setup')).toEqual({ name: 'home' });
+  });
+
+  it("maps '/game' -> game (param-free)", () => {
+    expect(parseRoute('/game')).toEqual({ name: 'game' });
+  });
+
   it("maps unknown paths ('/foo') -> home", () => {
     expect(parseRoute('/foo')).toEqual({ name: 'home' });
   });

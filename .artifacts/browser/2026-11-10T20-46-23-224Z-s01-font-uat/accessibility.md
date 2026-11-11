@@ -1,0 +1,9 @@
+- banner:
+  - button "Uncster — back to home": Uncster
+  - button "Connect Spotify"
+- main:
+  - paragraph: Your playlists called. They want receipts.
+  - status:
+    - paragraph: Your library's one tap away
+    - paragraph: Connect Spotify and uncster pulls in your whole playlist library. It's giving instant neon, it's giving your music.
+    - button "Connect Spotify"
