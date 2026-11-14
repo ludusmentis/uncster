@@ -796,3 +796,118 @@ p {
   border-color: var(--neon-pink-deep);
   color: #ffffff;
 }
+
+/* ------------------------------------------------------------------ */
+/* Period histogram + balance assessment (M006 / S02-T2, D008/D018/    */
+/* D019/D021). Dark grey surfaces, neon accents — no new dependencies. */
+/* ------------------------------------------------------------------ */
+
+.period-histogram {
+  margin: var(--space-m) 0;
+  padding: var(--space-s);
+  border: 1px solid var(--border-surface);
+  background: var(--bg-surface);
+  border-radius: 8px;
+  max-width: 34rem;
+}
+
+.period-histogram--unavailable {
+  opacity: 0.75;
+}
+
+.period-histogram--unavailable p {
+  margin: 0;
+}
+
+.period-histogram-title {
+  margin: 0 0 var(--space-s);
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.histogram {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-xs);
+  height: 7rem;
+  padding-top: var(--space-s);
+}
+
+.histogram-bin {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  min-width: 0;
+  height: 100%;
+}
+
+.histogram-bin-count {
+  font-size: var(--font-small);
+  color: var(--text-muted);
+}
+
+.histogram-bar {
+  width: 100%;
+  min-height: 3px;
+  background: linear-gradient(180deg, var(--neon-pink), var(--neon-pink-deep));
+  border-radius: 3px 3px 0 0;
+}
+
+.histogram-bin-label {
+  font-size: var(--font-small);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.period-verdicts {
+  display: flex;
+  gap: var(--space-m);
+  margin-top: var(--space-s);
+}
+
+.period-verdict {
+  margin: 0;
+  font-size: var(--font-small);
+  color: var(--text-muted);
+}
+
+.verdict {
+  font-weight: 700;
+}
+
+.verdict--excellent {
+  color: var(--neon-green-deep);
+}
+
+.verdict--good {
+  color: var(--neon-cyan);
+}
+
+.verdict--fair {
+  color: var(--text-primary);
+}
+
+.verdict--bad {
+  color: var(--neon-pink);
+}
+
+/* Warning badge next to the Start Game button (D021 — warn, never block). */
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  margin-left: var(--space-xs);
+  border: 1px solid var(--neon-cyan);
+  border-radius: 999px;
+  font-size: var(--font-small);
+  color: var(--text-primary);
+  background: rgba(0, 229, 255, 0.08);
+}
+
+.badge--warning {
+  border-color: var(--neon-cyan);
+  background: rgba(0, 229, 255, 0.08);
+}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { navigate } from '../routing';
 import { usePlayer } from '../playback/PlayerProvider';
 import { playTrack } from '../playback/playTrack';
@@ -8,6 +8,8 @@ import {
   type SpotifyTrackItem,
   type SpotifyTrack,
 } from '../api/tracks';
+import { assessPeriod } from '../game/periodBalance';
+import PeriodHistogram from '../components/PeriodHistogram';
 
 /**
  * Cover art as a play/pause control (M005 / S03-T2).
@@ -110,6 +112,11 @@ export default function PlaylistTracks({ id }: { id: string }): JSX.Element {
   const [retryCount, setRetryCount] = useState(0);
   const [tracks, setTracks] = useState<SpotifyTrackItem[]>([]);
 
+  // S02-T2: two-factor period assessment (D018/D021) for the histogram
+  // and the Start Game warning badge. Warn only — never blocks the button.
+  const assessment = useMemo(() => assessPeriod(tracks), [tracks]);
+  const warnBadlyBalanced = assessment.available === true && assessment.warnBadlyBalanced === true;
+
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
@@ -151,6 +158,9 @@ export default function PlaylistTracks({ id }: { id: string }): JSX.Element {
         >
           🎮 Play with this playlist
         </button>
+        {warnBadlyBalanced && (
+          <span className="badge badge--warning">⚠ Badly balanced</span>
+        )}
       </p>
       <h1 className="neon-heading">Playlist tracks</h1>
       {loading ? (
@@ -189,6 +199,8 @@ export default function PlaylistTracks({ id }: { id: string }): JSX.Element {
           </p>
         </section>
       ) : (
+        <>
+        <PeriodHistogram items={tracks} />
         <ul className="track-list">
           {tracks.map((item, index) => {
             const track = item.item;
@@ -259,6 +271,7 @@ export default function PlaylistTracks({ id }: { id: string }): JSX.Element {
             );
           })}
         </ul>
+        </>
       )}
     </main>
   );

@@ -425,3 +425,202 @@ describe('PlaylistTracks skeleton state (03-3-T3)', () => {
     expect(mobile).toMatch(/\.track-year\s*{[^}]*font-size:\s*var\(--font-small\)/);
   });
 });
+
+/* ------------------------------------------------------------------ */
+/* S02-T2: period histogram + balance assessment (D018/D019/D021).      */
+/*                                                                     */
+/* fixtureItems are all released 2024 → one decade bin, span 0 →       */
+/* balancedness Excellent but period-length Bad → the combined         */
+/* warning (D021) must fire (badge + banner). The evenSpread fixture    */
+/* spans 1965–2020 across seven decades, all non-empty → Excellent     */
+/* balance, Fair period (55y) → no warning. releaseYear is the real     */
+/* implementation (vi.mock spreads importOriginal).                     */
+/* ------------------------------------------------------------------ */
+
+import PeriodHistogram from '../components/PeriodHistogram';
+
+function makeDatedTrack(id: string, releaseDate: string): NonNullable<SpotifyTrackItem['item']> {
+  return {
+    id,
+    name: `Track ${id}`,
+    artists: [{ id: `${id}-a`, name: 'Artist' }],
+    album: {
+      images: [],
+      release_date: releaseDate,
+      release_date_precision: 'day' as const,
+    },
+    type: 'track' as const,
+  };
+}
+
+/** 1965–2020, at least one track per decade → 7/7 bins covered, span 55. */
+const evenSpreadYears = [
+  '1965-03-01', '1972-06-01', '1975-09-01',
+  '1981-02-01', '1985-05-01', '1989-08-01',
+  '1992-04-01', '1996-07-01', '1999-10-01',
+  '2003-01-01', '2007-06-01', '2010-09-01',
+  '2013-03-01', '2017-11-01', '2020-02-01',
+];
+
+const evenSpreadItems: SpotifyTrackItem[] = evenSpreadYears.map((d, i) => ({
+  item: makeDatedTrack(`ev-${i}`, d),
+}));
+
+/** All-years-missing fixture: release_year '—' only. */
+const missingYearItems: SpotifyTrackItem[] = [1, 2].map((i) => ({
+  item: makeDatedTrack(`mi-${i}`, ''),
+}));
+
+describe('PeriodHistogram component (S02-T2)', () => {
+  it('renders the neutral unavailable note when no parseable years exist', () => {
+    const html = renderToString(<PeriodHistogram items={missingYearItems} />);
+    expect(html).toContain('Assessment unavailable');
+    expect(html).toContain('period-histogram--unavailable');
+    expect(html).not.toContain('histogram-bar');
+  });
+
+  it('renders bars per decade, span, and both verdicts for a good playlist', () => {
+    const html = renderToString(<PeriodHistogram items={evenSpreadItems} />);
+    expect((html.match(/histogram-bar/g) ?? []).length).toBe(7);
+    expect(html).toContain('1960s');
+    expect(html).toContain('2020s');
+    // renderToString interleaves `<!-- -->` markers between expressions,
+    // so assert the span pieces, not the contiguous string.
+    expect(html).toContain('1965');
+    expect(html).toContain('2020');
+    expect(html).toContain('55');
+    expect(html).toContain('years');
+    expect(html).toContain('Excellent'); // balancedness
+    expect(html).toContain('Fair'); // period length
+    // No combined warning: balance Excellent, period Fair (D021).
+    expect(html).not.toContain('alert--warning');
+  });
+
+  it('renders the non-blocking badly-balanced banner for a single-year playlist', () => {
+    const html = renderToString(<PeriodHistogram items={fixtureItems} />);
+    expect(html).toContain('role="alert"');
+    expect(html).toContain('alert--warning');
+    expect(html).toContain('badly balanced for the game');
+    // Warn never blocks: no disabled surface in the banner.
+    expect(html).not.toContain('disabled');
+  });
+});
+
+describe('PlaylistTracks histogram + warning badge (M006 / S02-T2)', () => {
+  it('shows histogram and verdicts in the loaded non-empty state, and the Start Game button stays enabled', async () => {
+    vi.mocked(fetchAllPlaylistTracks).mockResolvedValue(fixtureItems);
+    let r!: TestRenderer.ReactTestRenderer;
+    await act(async () => {
+      r = TestRenderer.create(
+        <PlayerProvider authed>
+          <PlaylistTracks id="pl-1" />
+        </PlayerProvider>,
+      );
+    });
+    await act(async () => {
+      await flushMicrotasks();
+    });
+
+    const histogram = r.root.findAll(
+      (node) =>
+        typeof node.type === 'string' &&
+        String((node as ReactTestInstance).props?.className ?? '').startsWith('period-histogram'),
+    );
+    expect(histogram).toHaveLength(1);
+    // fixtureItems are all 2024 → one decade bin (2020s) and a Bad period
+    // verdict (span 0). Text nodes are symbol-typed instances here, so read
+    // the labels off their element instances directly.
+    const binLabels = r.root.findAll(
+      (node) =>
+        typeof node.type === 'string' &&
+        String((node as ReactTestInstance).props?.className ?? '') === 'histogram-bin-label',
+    );
+    expect(binLabels.map((n) => String(n.children[0]))).toEqual(['2020s']);
+    const verdicts = r.root.findAll(
+      (node) =>
+        typeof node.type === 'string' &&
+        String((node as ReactTestInstance).props?.className ?? '').includes('verdict--'),
+    );
+    expect(verdicts.map((n) => String(n.children[0]))).toContain('Bad');
+
+    // Badly balanced fixture (span 0 → period Bad) also shows the badge,
+    // and the Start Game button is never disabled (D021).
+    const badge = r.root.find(
+      (node) =>
+        typeof node.type === 'string' &&
+        String((node as ReactTestInstance).props?.className ?? '') === 'badge badge--warning',
+    );
+    expect(String(badge.children[0])).toContain('Badly balanced');
+    const startBtn = r.root.find(
+      (node) =>
+        typeof node.type === 'string' &&
+        String((node as ReactTestInstance).props?.className ?? '') === 'btn btn-primary',
+    );
+    expect(startBtn.props.disabled).toBeUndefined();
+    await act(async () => {
+      r.unmount();
+    });
+  });
+
+  it('omits the warning badge for an even-spread playlist but keeps the histogram', async () => {
+    vi.mocked(fetchAllPlaylistTracks).mockResolvedValue(evenSpreadItems);
+    let r!: TestRenderer.ReactTestRenderer;
+    await act(async () => {
+      r = TestRenderer.create(
+        <PlayerProvider authed>
+          <PlaylistTracks id="pl-1" />
+        </PlayerProvider>,
+      );
+    });
+    await act(async () => {
+      await flushMicrotasks();
+    });
+
+    const badges = r.root.findAll(
+      (node) =>
+        typeof node.type === 'string' &&
+        String((node as ReactTestInstance).props?.className ?? '').includes('badge--warning'),
+    );
+    expect(badges).toHaveLength(0);
+    const histogram = r.root.findAll(
+      (node) =>
+        typeof node.type === 'string' &&
+        String((node as ReactTestInstance).props?.className ?? '').startsWith('period-histogram'),
+    );
+    expect(histogram).toHaveLength(1);
+    await act(async () => {
+      r.unmount();
+    });
+  });
+
+  it('renders no histogram in the empty state', async () => {
+    vi.mocked(fetchAllPlaylistTracks).mockResolvedValue([]);
+    let r!: TestRenderer.ReactTestRenderer;
+    await act(async () => {
+      r = TestRenderer.create(
+        <PlayerProvider authed>
+          <PlaylistTracks id="pl-empty" />
+        </PlayerProvider>,
+      );
+    });
+    await act(async () => {
+      await flushMicrotasks();
+    });
+
+    const histogram = r.root.findAll(
+      (node) =>
+        typeof node.type === 'string' &&
+        String((node as ReactTestInstance).props?.className ?? '').startsWith('period-histogram'),
+    );
+    expect(histogram).toHaveLength(0);
+    // Empty-state surface (role=status) renders instead — no crash.
+    expect(
+      r.root.findAll(
+        (node) => typeof node.type === 'string' && (node as ReactTestInstance).props?.role === 'status',
+      ).length,
+    ).toBeGreaterThan(0);
+    await act(async () => {
+      r.unmount();
+    });
+  });
+});
