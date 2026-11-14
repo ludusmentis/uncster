@@ -99,7 +99,7 @@ describe('assessPeriod', () => {
     expect(a.balancednessVerdict).toBe('Excellent');
     expect(a.spanYears).toBe(0);
     expect(a.periodLengthVerdict).toBe('Bad');
-    // Period-length Bad → combined warning fires (warn only, never block).
+    // Period-length Bad carries the warning alone (D023): single-year playlists warn.
     expect(a.warnBadlyBalanced).toBe(true);
   });
 
