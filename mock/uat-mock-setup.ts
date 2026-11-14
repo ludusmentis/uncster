@@ -64,6 +64,13 @@ const playlists = [
     tracks: { total: 0 },
     owner: { id: 'u1' },
   },
+  {
+    id: 'pl-1995',
+    name: 'One Hit Wonder 1995',
+    images: [{ url: IMG('#c25e00', '1995'), height: 300, width: 300 }],
+    tracks: { total: 10 },
+    owner: { id: 'u1' },
+  },
 ];
 
 const tracksPage = {
@@ -153,6 +160,33 @@ window.fetch = ((
   if (/^https:\/\/api\.spotify\.com\/v1\/playlists\/[^/]+\/items/.test(url)) {
     if (url.includes('/v1/playlists/pl-empty/items')) {
       return slow(jsonResponse({ items: [], next: null, total: 0, limit: 100, offset: 0 }));
+    }
+    // S04-T2 (D023): single-year playlist fixture — every track releases
+    // 1995-03-01 so span is 1 year / 1 bin, balancedness Excellent 1.0,
+    // period-length verdict Bad, and the combined badly-balanced warning
+    // fires (warn, never block — D021/D066).
+    if (url.includes('/v1/playlists/pl-1995/items')) {
+      return slow(
+        jsonResponse({
+          items: Array.from({ length: 10 }, (_, i) => ({
+            item: {
+              id: `t1995-${i + 1}`,
+              name: `One Hit ${i + 1}`,
+              type: 'track',
+              artists: [{ id: `a1995-${i}`, name: `The ${1995 - i} Crew` }],
+              album: {
+                name: `Spring ${i + 1}`,
+                release_date: '1995-03-01',
+                images: [{ url: IMG('#c25e00', `S${i + 1}`), height: 64, width: 64 }],
+              },
+            },
+          })),
+          next: null,
+          total: 10,
+          limit: 100,
+          offset: 0,
+        }),
+      );
     }
     return slow(jsonResponse(tracksPage));
   }

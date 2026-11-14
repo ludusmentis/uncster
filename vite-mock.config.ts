@@ -8,9 +8,39 @@
  * Used only for browser UAT screenshots with mocked Spotify data; never for
  * real dev (the real config stays untouched) and never imported by tests.
  */
+import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import baseConfig from './vite.config';
 import { defineConfig, mergeConfig, type Plugin } from 'vite';
+
+/**
+ * UAT runs pin port 3000 (--port 3000 --strictPort) and verification treats a
+ * port-in-use startup failure as exit 1. Orphaned mock-server instances from
+ * previous attempts/sessions are the recurring cause, so the config frees the
+ * port itself at load time (before vite binds) — same best-effort contract as
+ * scripts/free-port-3000.mjs (npm run dev predev). Never imported by the app
+ * or tests; mock-config-only.
+ */
+const freePort3000 = (): void => {
+  try {
+    const pids = execSync('lsof -ti tcp:3000', { encoding: 'utf8' })
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+    for (const pid of pids) {
+      try {
+        process.kill(Number(pid), 'SIGKILL');
+        console.log(`[vite-mock] killed stale listener on :3000 (pid ${pid})`);
+      } catch {
+        /* already gone */
+      }
+    }
+    if (pids.length > 0) execSync('sleep 0.3');
+  } catch {
+    /* lsof exit 1 = no listener; nothing to do */
+  }
+};
+freePort3000();
 
 const injectMockSetup = (): Plugin => ({
   name: 'uat-mock-setup-injector',
