@@ -6,7 +6,7 @@ import GameSetup from './pages/GameSetup';
 import MockGame from './pages/MockGame';
 import Header from './components/Header';
 import PageShell from './components/PageShell';
-import { parseRoute, subscribeRoute } from './routing';
+import { navigate, parseRoute, subscribeRoute } from './routing';
 import { beginLogin } from './auth/spotifyAuth';
 import { loadTokens, hasUsableAccessToken } from './auth/tokenStore';
 import {
@@ -109,7 +109,9 @@ export default function App(): JSX.Element {
 
   // Log out: wipe all session state (tokens, PKCE keys, refresh flight) so
   // the next visit starts a fresh login. The subscribeAuth listener flips
-  // the chrome back to the Connect entry point.
+  // the chrome back to the Connect entry point, and navigate('/') returns
+  // the route to the Home connect view so a data route (e.g. /playlist/:id)
+  // doesn't keep fetching unauthed after tokens are gone.
   const handleLogout = (): void => {
     // S01-T3 ordering contract: kill the SDK Connect device BEFORE wiping
     // tokens, so a lingering SDK token callback cannot resurrect a ghost
@@ -121,6 +123,9 @@ export default function App(): JSX.Element {
     setDisplayName(null);
     setPremiumBlocked(false);
     setAccountError(null);
+    // Route back to Home (connect view) — last, after the D012/D016 teardown
+    // ordering above, so the data route doesn't render unauthed.
+    navigate('/');
   };
 
   // Premium gate (D014): fully blocking — replaces routes and chrome with
