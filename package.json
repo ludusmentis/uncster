@@ -9,6 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "verifys04t1": "node scripts/verify-s04-t1.mjs",
     "test": "vitest run",
     "verifyfont": "node scripts/verify-font-family.mjs"
   },
