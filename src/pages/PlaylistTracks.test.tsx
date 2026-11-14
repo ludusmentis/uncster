@@ -102,11 +102,16 @@ interface CoverButton {
  * `playerState` and calling rerender() so the component recomputes its
  * overlay state from the context (D012).
  */
-async function renderTracksInteractive(): Promise<{
+interface TracksHarness {
   buttons(): CoverButton[];
+  ctaProps(): { expanded: boolean; text: string };
+  toggle(): Promise<void>;
+  trackListVisible(): boolean;
   rerender(): Promise<void>;
   unmount(): Promise<void>;
-}> {
+}
+
+async function renderTracksInteractive(): Promise<TracksHarness> {
   let renderer!: TestRenderer.ReactTestRenderer;
   await act(async () => {
     renderer = TestRenderer.create(
@@ -119,27 +124,55 @@ async function renderTracksInteractive(): Promise<{
     await flushMicrotasks();
   });
 
-  const buttons = (): CoverButton[] =>
-    renderer.root
-      .findAll(
+  const cta = (): ReactTestInstance =>
+    renderer.root.find(
+      (node) =>
+        typeof node.type === 'string' &&
+        (node.children[0] === '👀 Show track list' ||
+          node.children[0] === '🙈 Hide track list'),
+    );
+
+  const harness: TracksHarness = {
+    buttons: () =>
+      renderer.root
+        .findAll(
+          (node) =>
+            typeof node.type === 'string' &&
+            String(
+              (node as ReactTestInstance).props?.className ?? '',
+            ).startsWith('track-cover-btn'),
+        )
+        .map((node) => ({
+          label: String(node.props['aria-label']),
+          overlay: String(
+            (node.children[1] as ReactTestInstance | undefined)?.props?.children ?? '',
+          ),
+          disabled: Boolean(node.props['aria-disabled']),
+          title: node.props.title as string | undefined,
+          click: () => {
+            node.props.onClick();
+          },
+        })),
+    ctaProps: () => {
+      const node = cta();
+      return {
+        expanded: Boolean(node.props['aria-expanded']),
+        text: String(node.children[0]),
+      };
+    },
+    // S03-T1: the track list is hidden by default (D022 / MEM067), so the
+    // playback tests toggle the CTA first to reveal the list.
+    toggle: async () => {
+      await act(async () => {
+        cta().props.onClick();
+      });
+    },
+    trackListVisible: () =>
+      renderer.root.findAll(
         (node) =>
           typeof node.type === 'string' &&
-          String((node as ReactTestInstance).props?.className ?? '').startsWith('track-cover-btn'),
-      )
-      .map((node) => ({
-        label: String(node.props['aria-label']),
-        overlay: String(
-          (node.children[1] as ReactTestInstance | undefined)?.props?.children ?? '',
-        ),
-        disabled: Boolean(node.props['aria-disabled']),
-        title: node.props.title as string | undefined,
-        click: () => {
-          node.props.onClick();
-        },
-      }));
-
-  return {
-    buttons,
+          (node as ReactTestInstance).props?.className === 'track-list',
+      ).length > 0,
     async rerender(): Promise<void> {
       await act(async () => {
         renderer.update(
@@ -155,6 +188,19 @@ async function renderTracksInteractive(): Promise<{
       });
     },
   };
+
+  // Existing playback tests expect a revealed list.
+  await harness.toggle();
+  return harness;
+}
+
+// S03-T1 harness: same mount, but WITHOUT clicking the CTA, so tests can
+// assert the default-hidden state. D022 / MEM067: per-visit state, no
+// persistence.
+async function renderTracksInteractiveRaw(): Promise<TracksHarness> {
+  const h = await renderTracksInteractive();
+  await h.toggle(); // undo the reveal click performed by the helper above
+  return h;
 }
 
 /** Reset the mutable player state and call spies between tests. */
@@ -172,6 +218,75 @@ function resetPlayerState(): void {
   vi.mocked(playTrack).mockClear();
   vi.mocked(fetchAllPlaylistTracks).mockClear();
 }
+
+describe('PlaylistTracks track-list visibility toggle (M006 / S03-T1)', () => {
+  beforeEach(() => {
+    resetPlayerState();
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('hides the track list by default behind a collapsed CTA with no year text', async () => {
+    const { buttons, ctaProps, trackListVisible, unmount } =
+      await renderTracksInteractiveRaw();
+    expect(ctaProps()).toMatchObject({ expanded: false, text: '👀 Show track list' });
+    expect(trackListVisible()).toBe(false);
+    expect(buttons()).toHaveLength(0);
+    await unmount();
+  });
+
+  it('reveals the full fixture track list when the CTA is clicked', async () => {
+    const { buttons, ctaProps, toggle, trackListVisible, unmount } =
+      await renderTracksInteractiveRaw();
+    await toggle();
+    expect(ctaProps()).toMatchObject({ expanded: true, text: '🙈 Hide track list' });
+    expect(trackListVisible()).toBe(true);
+    expect(buttons()).toHaveLength(3); // fixture: t1, t2, t3 (+ null-track row has none)
+    await unmount();
+  });
+
+  it('hides the list again on a second click (aria-expanded follows state)', async () => {
+    const h = await renderTracksInteractiveRaw();
+    await h.toggle();
+    expect(h.ctaProps().expanded).toBe(true);
+    await h.toggle();
+    expect(h.ctaProps()).toMatchObject({ expanded: false, text: '👀 Show track list' });
+    expect(h.trackListVisible()).toBe(false);
+    expect(h.buttons()).toHaveLength(0);
+    await h.unmount();
+  });
+
+  it('keeps PeriodHistogram mounted while the track list is hidden', async () => {
+    let r!: TestRenderer.ReactTestRenderer;
+    await act(async () => {
+      r = TestRenderer.create(
+        <PlayerProvider authed>
+          <PlaylistTracks id="pl-1" />
+        </PlayerProvider>,
+      );
+    });
+    await act(async () => {
+      await flushMicrotasks();
+    });
+    const histogram = r.root.findAll(
+      (node) =>
+        typeof node.type === 'string' &&
+        String((node as ReactTestInstance).props?.className ?? '').startsWith('period-histogram'),
+    );
+    expect(histogram).toHaveLength(1);
+    const coverButtons = r.root.findAll(
+      (node) =>
+        typeof node.type === 'string' &&
+        String((node as ReactTestInstance).props?.className ?? '').startsWith('track-cover-btn'),
+    );
+    expect(coverButtons).toHaveLength(0);
+    await act(async () => {
+      r.unmount();
+    });
+  });
+});
 
 describe('PlaylistTracks cover-art playback interaction (M005 / S03-T3)', () => {
   beforeEach(() => {
@@ -339,6 +454,15 @@ describe('PlaylistTracks cover-art playback interaction (M005 / S03-T3)', () => 
       await flushMicrotasks();
     });
 
+    // S03-T1: the list is hidden by default, so click the CTA first.
+    const showCta = r.root.find(
+      (node) =>
+        typeof node.type === 'string' &&
+        node.children[0] === '👀 Show track list',
+    );
+    await act(async () => {
+      showCta.props.onClick();
+    });
     const nullPlaceholder = r.root.findAll(
       (node) =>
         typeof node.type === 'string' &&

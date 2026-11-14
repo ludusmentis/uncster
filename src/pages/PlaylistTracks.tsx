@@ -111,6 +111,10 @@ export default function PlaylistTracks({ id }: { id: string }): JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [tracks, setTracks] = useState<SpotifyTrackItem[]>([]);
+  // S03-T1: per-visit show/hide for the track list (default hidden so the
+  // quizmaster doesn't see release years while setting up a game — D022 /
+  // MEM067; deliberately not persisted, resets on every visit).
+  const [showTracks, setShowTracks] = useState(false);
 
   // S02-T2: two-factor period assessment (D018/D021) for the histogram
   // and the Start Game warning badge. Warn only — never blocks the button.
@@ -201,6 +205,14 @@ export default function PlaylistTracks({ id }: { id: string }): JSX.Element {
       ) : (
         <>
         <PeriodHistogram items={tracks} />
+        <button
+          className="btn"
+          aria-expanded={showTracks}
+          onClick={() => setShowTracks((v) => !v)}
+        >
+          {showTracks ? '🙈 Hide track list' : '👀 Show track list'}
+        </button>
+        {showTracks && (
         <ul className="track-list">
           {tracks.map((item, index) => {
             const track = item.item;
@@ -271,7 +283,8 @@ export default function PlaylistTracks({ id }: { id: string }): JSX.Element {
             );
           })}
         </ul>
-        </>
+        )}
+      </>
       )}
     </main>
   );
