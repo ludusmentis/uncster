@@ -1,0 +1,8 @@
+- banner:
+  - button "Uncster — back to home": Uncster
+  - button "Connect Spotify"
+- main:
+  - heading "No game in progress" [level=1]
+  - paragraph: Start a game from a playlist to see it here.
+  - paragraph:
+    - button "← Back home"

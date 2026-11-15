@@ -39,6 +39,8 @@ const playerState: UseSpotifyPlayerResult = {
   error: null,
   activateElement: vi.fn(),
   togglePlay: vi.fn(),
+  pause: vi.fn(),
+  resume: vi.fn(),
 };
 
 vi.mock('../playback/useSpotifyPlayer', () => ({

@@ -75,3 +75,8 @@ export function takePendingGameConfig(): GameConfig | null {
   pendingGameConfig = null;
   return config;
 }
+
+/** Test-only: clear the pending config slot and the StrictMode cache. */
+export function __resetPendingGameConfigForTests(): void {
+  pendingGameConfig = null;
+}

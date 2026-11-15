@@ -911,3 +911,183 @@ p {
   border-color: var(--neon-cyan);
   background: rgba(0, 229, 255, 0.08);
 }
+
+/* ---- Game view (M007 / S02-T02) ---- */
+
+.game-player-name {
+  color: var(--neon-cyan);
+  font-size: var(--font-heading-3);
+  margin-bottom: var(--space-s);
+}
+
+.game-hidden-slot {
+  display: grid;
+  place-items: center;
+  min-height: 56px;
+  border: 1px dashed var(--neon-cyan);
+  border-radius: 8px;
+  animation: game-pulse 1.6s ease-in-out infinite;
+}
+
+.game-hidden-glyph {
+  font-size: var(--font-heading-3);
+  color: var(--neon-cyan);
+}
+
+@keyframes game-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+.game-loading {
+  color: var(--text-secondary);
+}
+
+/* ---- Game drag-and-drop (M007 / S02-T03) ---- */
+
+.game-drag-handle {
+  touch-action: none; /* shared-screen touch: pointer drag, not scroll */
+  cursor: grab;
+  user-select: none;
+}
+
+.game-drag-handle:active {
+  cursor: grabbing;
+}
+
+.game-drop-gap {
+  min-height: var(--space-s);
+  border-radius: 6px;
+  transition: min-height 120ms ease, background-color 120ms ease, box-shadow 120ms ease;
+}
+
+.game-drop-gap.drop-target-active {
+  min-height: 12px;
+  background-color: rgba(0, 229, 255, 0.18);
+  box-shadow: 0 0 8px var(--neon-cyan);
+}
+
+/* ---- Turn result overlays (M007 / S02-T04) ---- */
+
+.turn-result-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-l);
+  background: rgba(3, 7, 18, 0.72);
+  backdrop-filter: blur(2px);
+  z-index: 50;
+}
+
+.turn-result-overlay {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+  width: min(440px, 100%);
+  padding: var(--space-l);
+  border-radius: var(--radius-card);
+  background: var(--bg-elevated);
+  border: 1px solid var(--neon-green);
+  box-shadow: 0 0 24px rgba(57, 255, 20, 0.25);
+}
+
+.turn-result-overlay--fail {
+  border-color: var(--neon-pink);
+  box-shadow: 0 0 24px rgba(255, 0, 127, 0.3);
+}
+
+.turn-result-heading {
+  font-size: var(--font-heading);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.turn-result-overlay--success .turn-result-heading {
+  color: var(--neon-green);
+}
+
+.turn-result-overlay--fail .turn-result-heading {
+  color: var(--neon-pink);
+}
+
+.turn-result-song {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  color: var(--text-primary);
+}
+
+.turn-result-title {
+  font-size: var(--font-heading-small);
+}
+
+.turn-result-year {
+  color: var(--neon-cyan);
+  font-size: var(--font-body);
+}
+
+.turn-result-hint {
+  color: var(--text-muted);
+}
+
+.turn-result-overlay .btn {
+  align-self: flex-start;
+}
+
+/* ---- Game over (M007 / S02-T04) ---- */
+
+.game-over-sub {
+  color: var(--text-muted);
+  margin-bottom: var(--space-m);
+}
+
+/* ---- Podium summary (M007 / S05-T02) ---- */
+
+.podium-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-l);
+  display: grid;
+  gap: var(--space-l);
+}
+
+.podium-player {
+  padding: var(--space-m);
+  border: 1px solid var(--border-surface);
+  border-radius: var(--radius-card);
+  background: var(--bg-surface);
+}
+
+.podium-player[data-rank="1"] {
+  border-color: var(--neon-pink);
+}
+
+.podium-player-name {
+  margin: 0 0 var(--space-s);
+  font-size: var(--font-heading-small);
+}
+
+.podium-rank {
+  color: var(--neon-pink);
+  font-variant-numeric: tabular-nums;
+  margin-right: var(--space-s);
+}
+
+.podium-winner {
+  color: var(--neon-pink);
+}
+
+.podium-song-list {
+  max-width: var(--measure, 40rem);
+}
+
+.podium-empty {
+  color: var(--text-muted);
+}
+
+.podium-actions {
+  display: flex;
+  gap: var(--space-m);
+  flex-wrap: wrap;
+}

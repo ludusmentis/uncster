@@ -114,12 +114,14 @@ describe('glow-pulse CSS (pulse visible, reduced-motion safe)', () => {
     expect(keyframeBlock).toContain('0%');
     expect(keyframeBlock).toContain('50%');
     expect((keyframeBlock.match(/text-shadow/g) ?? []).length).toBe(2);
-    // Exactly two keyframe blocks in the stylesheet: glow-pulse (header wordmark)
-    // and shimmer (03-3-T3 skeleton placeholders). Neither animates anything
-    // else, so the pulse stays the only text-shadow animation.
-    expect((css.match(/@keyframes/g) ?? []).length).toBe(2);
+    // Exactly three keyframe blocks in the stylesheet: glow-pulse (header
+    // wordmark), shimmer (03-3-T3 skeleton placeholders), and game-pulse
+    // (M007 hidden-song ? box opacity). None animates anything else, so
+    // the pulse stays the only text-shadow animation.
+    expect((css.match(/@keyframes/g) ?? []).length).toBe(3);
     expect((css.match(/@keyframes glow-pulse/g) ?? []).length).toBe(1);
     expect((css.match(/@keyframes shimmer/g) ?? []).length).toBe(1);
+    expect((css.match(/@keyframes game-pulse/g) ?? []).length).toBe(1);
     // shimmer animates background-position only — never a text-shadow.
     const shimmerBlock = css.slice(
       css.indexOf('@keyframes shimmer'),

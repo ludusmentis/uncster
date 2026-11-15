@@ -3,7 +3,7 @@ import Home from './pages/Home';
 import Callback from './pages/Callback';
 import PlaylistTracks from './pages/PlaylistTracks';
 import GameSetup from './pages/GameSetup';
-import MockGame from './pages/MockGame';
+import Game from './pages/Game';
 import Header from './components/Header';
 import PageShell from './components/PageShell';
 import { navigate, parseRoute, subscribeRoute } from './routing';
@@ -156,7 +156,7 @@ export default function App(): JSX.Element {
       content = <GameSetup id={route.id} />;
       break;
     case 'game':
-      content = <MockGame />;
+      content = <Game />;
       break;
     default:
       content = (

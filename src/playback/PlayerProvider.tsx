@@ -32,6 +32,15 @@ export function usePlayer(): UseSpotifyPlayerResult {
 }
 
 /**
+ * Nullable variant for surfaces that work without a player: returns null
+ * when no provider is mounted (SSR / component tests) so per-turn playback
+ * wiring can degrade to silent no-op instead of throwing (M007 / S04-T2).
+ */
+export function usePlayerOptional(): UseSpotifyPlayerResult | null {
+  return useContext(PlayerContext);
+}
+
+/**
  * Mount only while authed; the hook's effect teardown disconnects the SDK
  * device when authed flips false (logout or silent-refresh wipe), which
  * also remounts this provider for the next login.

@@ -42,6 +42,9 @@ class FakePlayer {
   connect = vi.fn(async (): Promise<boolean> => true);
   disconnect = vi.fn();
   activateElement = vi.fn();
+  pause = vi.fn(async (): Promise<void> => {});
+  resume = vi.fn(async (): Promise<void> => {});
+  togglePlay = vi.fn(async (): Promise<void> => {});
 
   constructor(options: FakePlayerOptions) {
     this.options = options;
@@ -338,5 +341,60 @@ describe('useSpotifyPlayer (S02-T3)', () => {
     expect(secondPlayer.disconnect).toHaveBeenCalledTimes(1);
     expect(firstPlayer.disconnect).toHaveBeenCalledTimes(1); // still just once
     await second.unmount();
+  });
+
+  it('pause() calls the SDK pause, never togglePlay; resume() calls SDK resume', async () => {
+    const hook = await renderHookFresh(true);
+    const player = FakePlayer.instances[0];
+
+    await act(async () => {
+      hook.result.pause();
+      await flushMicrotasks();
+    });
+    expect(player.pause).toHaveBeenCalledTimes(1);
+    // Deterministic: never a toggle that could restart a finished track.
+    expect(player.togglePlay).not.toHaveBeenCalled();
+    expect(player.resume).not.toHaveBeenCalled();
+
+    await act(async () => {
+      hook.result.resume();
+      await flushMicrotasks();
+    });
+    expect(player.resume).toHaveBeenCalledTimes(1);
+  });
+
+  it('pause()/resume() are safe no-ops when no player exists (authed=false)', async () => {
+    const hook = await renderHookFresh(false);
+    expect(() => hook.result.pause()).not.toThrow();
+    expect(() => hook.result.resume()).not.toThrow();
+    expect(FakePlayer.instances).toHaveLength(0);
+    await hook.unmount();
+  });
+
+  it('logs SDK pause/resume failures instead of throwing', async () => {
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.doMock('./sdkLoader', () => ({
+      loadSpotifySdk: vi.fn(async () => ({
+        Player: class FailingPause extends FakePlayer {
+          pause = vi.fn(async () => { throw new Error('pause boom'); });
+          resume = vi.fn(async () => { throw new Error('resume boom'); });
+        },
+      })),
+    }));
+    vi.resetModules();
+
+    const hook = await renderHookFresh(true);
+
+    await act(async () => {
+      hook.result.pause();
+      await flushMicrotasks();
+    });
+    await act(async () => {
+      hook.result.resume();
+      await flushMicrotasks();
+    });
+    expect(errSpy).toHaveBeenCalledWith('[player:pause] pause failed', expect.any(Error));
+    expect(errSpy).toHaveBeenCalledWith('[player:resume] resume failed', expect.any(Error));
+    errSpy.mockRestore();
   });
 });

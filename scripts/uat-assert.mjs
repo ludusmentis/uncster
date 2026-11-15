@@ -60,6 +60,30 @@ const load = async (path, width, extra = {}) => {
   await page.goto(BASE + path, extra);
 };
 
+// M007 / S02-T05: the default mode is now the mock-harness game walk
+// (scripts/uat-game-walk.mjs — full silent-audio mock game UAT). The
+// original M003 responsive-polish suite still runs in full via:
+//   node scripts/uat-assert.mjs responsive
+if (process.argv[2] !== 'responsive') {
+  // S03-T03 (HMR gotcha): curl-verify the mock injection BEFORE walking —
+  // an HMR invalidation serves index.html with a cache-busting query on
+  // the entry script, and the prefix-match injector in vite-mock.config.ts
+  // handles it, but an exact-match regression would silently drop the
+  // fetch patch mid-session. Verify the harness HTML actually injects
+  // mock/uat-mock-setup.ts ahead of the app entry.
+  const servedIndex = await fetch(`${BASE}/`).then((r) => r.text());
+  check('mock harness: vite-mock injected the fetch-patch script tag',
+    servedIndex.includes('/mock/uat-mock-setup.ts'),
+    'curl of / must contain the /mock/uat-mock-setup.ts script tag before the entry');
+
+  const { runGameWalk } = await import('./uat-game-walk.mjs');
+  await runGameWalk({ page, check, BASE });
+  const failed = results.filter((r) => !r.ok);
+  console.log(failed.length === 0 ? 'ALL ASSERTIONS PASSED' : `${failed.length} ASSERTIONS FAILED`);
+  await browser.close();
+  process.exit(failed.length === 0 ? 0 : 1);
+}
+
 // --- Grid reflow at all three widths ---
 await load('/', 1280, { waitUntil: 'networkidle' });
 let grid = await page.$('.playlist-grid');

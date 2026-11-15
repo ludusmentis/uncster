@@ -37,6 +37,10 @@ export interface UseSpotifyPlayerResult extends PlayerState {
   activateElement: () => void;
   /** Toggle pause/resume on the SDK device. No-op until ready. */
   togglePlay: () => void;
+  /** Deterministically pause the SDK device. No-op until ready. */
+  pause: () => void;
+  /** Deterministically resume the SDK device. No-op until ready. */
+  resume: () => void;
 }
 
 /**
@@ -164,5 +168,20 @@ export function useSpotifyPlayer(enabled: boolean): UseSpotifyPlayerResult {
     });
   }, []);
 
-  return { ...state, activateElement, togglePlay };
+  // Deterministic controls (M007 / S04-T1): unlike togglePlay these never
+  // restart a naturally-ended track — pause() on a stopped device stays
+  // stopped, so per-turn drop handling cannot resurrect finished audio.
+  const pause = useCallback(() => {
+    playerRef.current?.pause().catch((err: unknown) => {
+      console.error('[player:pause] pause failed', err);
+    });
+  }, []);
+
+  const resume = useCallback(() => {
+    playerRef.current?.resume().catch((err: unknown) => {
+      console.error('[player:resume] resume failed', err);
+    });
+  }, []);
+
+  return { ...state, activateElement, togglePlay, pause, resume };
 }

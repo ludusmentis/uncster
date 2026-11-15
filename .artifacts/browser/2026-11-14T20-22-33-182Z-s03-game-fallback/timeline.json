@@ -1,0 +1,26 @@
+{
+  "entries": [
+    {
+      "id": 1,
+      "tool": "browser_navigate",
+      "status": "error",
+      "durationMs": 9,
+      "beforeUrl": "about:blank",
+      "afterUrl": "about:blank",
+      "line": "#1 | browser_navigate | error | 9ms | screenshot=true, url=\"http://127.0.0.1:5188/\" | page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5188/\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:5188/\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "id": 2,
+      "tool": "browser_navigate",
+      "status": "success",
+      "durationMs": 1721,
+      "beforeUrl": "chrome-error://chromewebdata/",
+      "afterUrl": "http://127.0.0.1:5188/game",
+      "line": "#2 | browser_navigate | success | 1721ms | screenshot=true, url=\"http://127.0.0.1:5188/game\" | URL changed to http://127.0.0.1:5188/game; title changed to Uncster; landmarks 0→2; buttons 2→3 | Warnings: JS: Failed to load resource: the server responded with a status of 404 (Not Found); Network: GET document FAILED (x2)\nUse browser_get_console_logs/browser_get_network_logs for full diagnostics."
+    }
+  ],
+  "retained": 2,
+  "totalRecorded": 2,
+  "bounded": false,
+  "summary": "Timeline: 2 browser actions recorded."
+}

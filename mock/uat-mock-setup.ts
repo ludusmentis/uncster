@@ -58,6 +58,15 @@ const playlists = [
     owner: { id: 'u1' },
   },
   {
+    // M007 / S02-T05: tiny two-track playlist for the deterministic
+    // single-player mock-game UAT walk (fail overlay -> correct drop -> win).
+    id: 'pl-quick',
+    name: 'Quick Win Duel',
+    images: [{ url: IMG('#ff8c00', 'QCK'), height: 300, width: 300 }],
+    tracks: { total: 2 },
+    owner: { id: 'u1' },
+  },
+  {
     id: 'pl-empty',
     name: 'Mainly A Placeholder',
     images: [{ url: IMG('#808080', 'EMP'), height: 300, width: 300 }],
@@ -158,6 +167,48 @@ window.fetch = ((
     );
   }
   if (/^https:\/\/api\.spotify\.com\/v1\/playlists\/[^/]+\/items/.test(url)) {
+    // M007 / S02-T05: two tracks, 30 years apart, so the walk can read the
+    // start card's year from the DOM and force a deterministic wrong drop
+    // (then the only other unowned song must be the same hidden song again,
+    // since drawNext skips owned cards in a 2-card deck).
+    if (url.includes('/v1/playlists/pl-quick/items')) {
+      return slow(
+        jsonResponse({
+          items: [
+            {
+              item: {
+                id: 'tq-1',
+                name: 'Retro Rodge',
+                type: 'track',
+                artists: [{ id: 'aq-1', name: 'Cassette Ghost' }],
+                album: {
+                  name: 'Tape Deck One',
+                  release_date: '1990-05-01',
+                  images: [{ url: IMG('#8a2be2', 'R1'), height: 64, width: 64 }],
+                },
+              },
+            },
+            {
+              item: {
+                id: 'tq-2',
+                name: 'Future Bop',
+                type: 'track',
+                artists: [{ id: 'aq-2', name: 'Neon Circuit' }],
+                album: {
+                  name: 'Hyperlane',
+                  release_date: '2020-07-01',
+                  images: [{ url: IMG('#00fa9a', 'R2'), height: 64, width: 64 }],
+                },
+              },
+            },
+          ],
+          next: null,
+          total: 2,
+          limit: 100,
+          offset: 0,
+        }),
+      );
+    }
     if (url.includes('/v1/playlists/pl-empty/items')) {
       return slow(jsonResponse({ items: [], next: null, total: 0, limit: 100, offset: 0 }));
     }
