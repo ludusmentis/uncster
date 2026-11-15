@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import HeroTagline from '../components/HeroTagline';
 import PlaylistGrid from '../components/PlaylistGrid';
 import {
   fetchAllPlaylists,
@@ -8,7 +7,7 @@ import {
 import { navigate } from '../routing';
 
 /**
- * Home view (M003 / S03-2, T2): hero tagline + playlist library. Identity,
+ * Home view (M003 / S03-2, T2): playlist library. Identity,
  * connect and logout chrome live in the shared Header (App), so Home is
  * purely content: the "Connect Spotify" entry CTA for unauthed visitors and
  * the playlist grid for connected ones. Auth state arrives via props from
@@ -76,7 +75,6 @@ export default function Home({
 
   return (
     <main className="page">
-      <HeroTagline />
       {authError ? (
         <section role="alert" className="alert">
           <p>{authError}</p>

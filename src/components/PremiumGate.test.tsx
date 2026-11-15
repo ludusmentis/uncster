@@ -5,7 +5,7 @@
  *
  * 1. Product check — App fetches GET /v1/me (mocked) and renders the
  *    blocking PremiumGate screen when `product !== 'premium'`; a premium
- *    account sees the normal app (hero tagline, no gate).
+ *    account sees the normal app (no gate).
  * 2. account_error backstop — AccountErrorWatcher (inside PlayerProvider)
  *    flips App to the gate when the SDK player categorises an error as
  *    kind 'account', and ignores other error kinds.
@@ -137,7 +137,7 @@ describe('App product gate (GET /v1/me `product`)', () => {
       'Uncster only works with Spotify Premium accounts',
     );
     // No further access: the normal app content is gone.
-    expect(json).not.toContain('Your playlists called.');
+    expect(json).not.toContain('Your playlists');
   });
 
   it('shows the normal app for a premium account', async () => {
@@ -152,7 +152,7 @@ describe('App product gate (GET /v1/me `product`)', () => {
     });
     const json = treeToStringJSON(tree);
     expect(json).not.toContain('Premium required');
-    expect(json).toContain('Your playlists called.');
+    expect(json).toContain('Your playlists');
   });
 
   it('releases the gate on logout from the blocking screen', async () => {

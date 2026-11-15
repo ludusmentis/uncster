@@ -228,7 +228,14 @@ window.fetch = ((
               album: {
                 name: `Spring ${i + 1}`,
                 release_date: '1995-03-01',
-                images: [{ url: IMG('#c25e00', `S${i + 1}`), height: 64, width: 64 }],
+                // S04-T1: exactly one pl-1995 item (t1995-1) is image-less so
+                // its placed game row deterministically shows the 🎵 no-cover
+                // fallback (all pl-1995 drops are correct — all-1995 ties).
+                // Release years and track order are untouched.
+                images:
+                  i === 0
+                    ? []
+                    : [{ url: IMG('#c25e00', `S${i + 1}`), height: 64, width: 64 }],
               },
             },
           })),

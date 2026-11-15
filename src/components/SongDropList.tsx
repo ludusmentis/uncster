@@ -146,15 +146,21 @@ export default function SongDropList({
     />
   );
 
+  // Game rows (S02-T2): year is the FIRST, prominently large column; no
+  // ordinal numbering. Cover art when available, 🎵 fallback otherwise.
+  // Hidden slot is untouched — it stays a bare ? handle (MEM092 fairness).
   const row = (song: TurnSong, index: number): ReactNode => (
     <li key={`${songKey(song)}-${index}`} className="track-item game-list-row">
-      <span className="track-index" aria-hidden="true">{index + 1}</span>
-      <span aria-hidden="true" className="track-cover-placeholder">🎵</span>
+      <span className="game-year-large">{song.releaseYear ?? '—'}</span>
+      {song.coverUrl ? (
+        <img src={song.coverUrl} alt="" loading="lazy" className="track-cover" />
+      ) : (
+        <span aria-hidden="true" className="track-cover-placeholder">🎵</span>
+      )}
       <div className="track-info">
         <p className="track-title">{song.name}</p>
-        <p className="track-artist">—</p>
+        <p className="track-artist">{song.artist ?? '—'}</p>
       </div>
-      <span className="track-year">{song.releaseYear ?? '—'}</span>
     </li>
   );
 

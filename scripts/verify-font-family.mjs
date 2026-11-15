@@ -9,12 +9,10 @@ const checks = [
   ['src/styles/tokens.css', "--font-body-family: 'Righteous', cursive;", true],
   ['src/styles/base.css', 'Heading emphasis: Righteous', true],
   ['src/styles/base.css', 'body font (Righteous/17px)', true],
-  ['src/components/HeroTagline.tsx', 'one-liner in Righteous', true],
   // Absence check: no stale Shrikhand anywhere in source or index.html
   ['src/styles/fonts.css', 'Shrikhand', false],
   ['src/styles/tokens.css', 'Shrikhand', false],
   ['src/styles/base.css', 'Shrikhand', false],
-  ['src/components/HeroTagline.tsx', 'Shrikhand', false],
   ['index.html', 'Shrikhand', false],
 ];
 

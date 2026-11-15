@@ -237,11 +237,6 @@ p {
   padding-bottom: var(--space-2xl);
 }
 
-/* Hero tagline on Home (under the header). */
-.hero-tagline {
-  margin: 0 0 var(--space-2xl);
-}
-
 /* --- Skeletons (03-3-T3): shimmer placeholders in the same layout
    shape as the loaded content, so nothing jumps when data lands. --- */
 
@@ -640,8 +635,7 @@ p {
   }
 
   /* Track row folds: index column hidden, cover thumb shrinks, year
-     column tightened to fit comfortably at 375px. */
-  .track-item {
+     column tightened to fit comfortably at 375px. */  .track-item {
     grid-template-columns: 40px 1fr auto;
     gap: var(--space-s);
     padding: var(--space-xs) var(--space-s);
@@ -649,12 +643,6 @@ p {
 
   .track-index {
     display: none;
-  }
-
-  .track-cover,
-  .track-cover-placeholder {
-    width: 40px;
-    height: 40px;
   }
 
   .track-year {
@@ -943,6 +931,49 @@ p {
   color: var(--text-secondary);
 }
 
+/* ---- Game song list rows (M008 / S02-T2) ----
+   Year-first, cover, artist rows for the game list only. The shared
+   .track-item grid is untouched (PlaylistTracks regression risk); these
+   rules scope to .game-list-row. */
+.game-list-row {
+  grid-template-columns: auto 48px 1fr;
+  align-items: center;
+}
+
+/* Prominent large year column: solid neon cyan (D008), NO text glow,
+   tabular digits so years align, min-width so single digits don't jitter.
+   Family: --font-body-family (Righteous — the app heading font; --font-heading
+   is a SIZE token). Size: --font-heading (30px) — the largest non-wordmark
+   step; --font-heading-3 is not defined in tokens.css. */
+.game-year-large {
+  font-family: var(--font-body-family);
+  font-size: var(--font-heading);
+  color: var(--neon-cyan);
+  font-variant-numeric: tabular-nums;
+  min-width: 3.5ch;
+  white-space: nowrap;
+}
+
+/* Mobile fold: the year column stays (it is the point of the layout) —
+   shrink the year and cover instead of hiding either. Declared AFTER the
+   base rules above so the override wins the cascade at narrow widths. */
+@media (max-width: 480px) {
+  .game-list-row {
+    grid-template-columns: auto 40px 1fr;
+  }
+
+  .game-year-large {
+    font-size: var(--font-heading-small);
+    min-width: 2.5ch;
+  }
+
+  .track-cover,
+  .track-cover-placeholder {
+    width: 40px;
+    height: 40px;
+  }
+}
+
 /* ---- Game drag-and-drop (M007 / S02-T03) ---- */
 
 .game-drag-handle {
@@ -1042,7 +1073,6 @@ p {
   margin-bottom: var(--space-m);
 }
 
-/* ---- Podium summary (M007 / S05-T02) ---- */
 
 .podium-list {
   list-style: none;
@@ -1074,16 +1104,12 @@ p {
   margin-right: var(--space-s);
 }
 
+.podium-player-title {
+  display: inline;
+}
+
 .podium-winner {
   color: var(--neon-pink);
-}
-
-.podium-song-list {
-  max-width: var(--measure, 40rem);
-}
-
-.podium-empty {
-  color: var(--text-muted);
 }
 
 .podium-actions {

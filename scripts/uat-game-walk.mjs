@@ -26,9 +26,10 @@
  *   - two players, songsToWin 2; a deliberate wrong drop (fail overlay),
  *     a mid-game hard refresh-resume on Bo's awaiting-drop turn (identical
  *     hidden song + snapshot), rotation until the last player (Ada) wins,
- *     landing on the PodiumSummary finale: every player's full revealed
- *     chronology in win order, Play again -> /setup/<id>, Back to playlist
- *     -> /playlist/<id>, and zero live api.spotify.com requests.
+ *     landing on the PodiumSummary finale: ranked winners-only podium
+ *     (names in win order, zero podium-song rows), Play again ->
+ *     /setup/<id>, Back to playlist -> /playlist/<id>, and zero live
+ *     api.spotify.com requests.
  *
  * Requires the vite-mock dev server on 127.0.0.1:3000 and the gsd
  * chrome-for-testing browser (found via its CDP socket), like uat-assert.
@@ -48,6 +49,20 @@ export async function runGameWalk({ page, check, BASE }) {
   });
 
   await page.setViewportSize({ width: 1280, height: 800 });
+
+  // S04-T1: pin the deck seed. Game.tsx seeds createDeck with Date.now(),
+  // which would make the pl-1995 hidden song random per run. Pinning now()
+  // to a constant makes every game deterministic; 1700000000004 was chosen
+  // offline (replicating mulberry32 + Fisher-Yates over the t1995-1..10
+  // fixture order) so the pl-1995 deck order is [One Hit 4, One Hit 1, …]:
+  // Ada's start card is deck[0] (One Hit 4) and her drawn hidden song is
+  // deck[1] — t1995-1, the image-less fixture — so the 🎵 no-cover fallback
+  // assertion after her drop is deterministic, not probabilistic. Nothing
+  // else in the walk depends on wall-clock time (mock latency uses real
+  // setTimeout; the seeded auth token expiry stays 1h ahead of the pin).
+  await page.addInitScript(() => {
+    Date.now = () => 1700000000004;
+  });
 
   // Fresh game + setup state (never touch the seeded auth tokens).
   // The walk may start on about:blank, where localStorage access is
@@ -125,13 +140,68 @@ export async function runGameWalk({ page, check, BASE }) {
   const turnPlayerName = () =>
     page.evaluate(() => document.querySelector('.game-player-name')?.textContent?.trim());
 
+  // S04-T1: row-metadata invariants for every .game-list-row — year is the
+  // FIRST element child (.game-year-large), exactly one cover that is either
+  // an img with a non-empty src or the 🎵 text fallback, non-empty artist +
+  // title text, and zero .track-index ordinals.
+  const rowMetadata = () =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('.game-list-row')].map((r) => {
+        const first = r.firstElementChild;
+        const img = r.querySelector('img.track-cover');
+        const ph = r.querySelector('.track-cover-placeholder');
+        return {
+          firstIsYear: !!first && first.classList.contains('game-year-large'),
+          coverCount: r.querySelectorAll('img.track-cover, .track-cover-placeholder').length,
+          coverImgSrc: img ? img.getAttribute('src') || '' : null,
+          fallback: ph ? (ph.textContent ?? '').trim() : null,
+          title: (r.querySelector('.track-title')?.textContent ?? '').trim(),
+          artist: (r.querySelector('.track-artist')?.textContent ?? '').trim(),
+          ordinals: r.querySelectorAll('.track-index').length,
+        };
+      }),
+    );
+  const checkRowMetadata = async (label) => {
+    const rows = await rowMetadata();
+    const ok =
+      rows.length > 0 &&
+      rows.every(
+        (r) =>
+          r.firstIsYear &&
+          r.coverCount === 1 &&
+          ((r.coverImgSrc !== null && r.coverImgSrc.length > 0) || r.fallback === '🎵') &&
+          r.title.length > 0 &&
+          r.artist.length > 0 &&
+          r.ordinals === 0,
+      );
+    check(label, ok, JSON.stringify(rows));
+  };
+
+  // ---- G0 (S04-T1): tagline-absence check on the authed home page, before
+  // any game starts ----
+  await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+  await page.waitForSelector('.playlist-grid', { timeout: WAIT_MS });
+  const home = await page.evaluate(() => ({
+    grid: Boolean(document.querySelector('.playlist-grid')),
+    text: document.body.textContent ?? '',
+    heroTaglineNodes: document.querySelectorAll('.hero-tagline').length,
+  }));
+  // Only the FULL removed tagline phrase is asserted absent — the
+  // "Your playlists" h2 heading survived S01 and must stay present.
+  check('G0 home: playlists grid renders after auth',
+    home.grid && home.text.includes('Your playlists'),
+    `grid=${home.grid}`);
+  check('G0 home: removed tagline phrase + .hero-tagline are absent',
+    !home.text.includes('Your playlists called') && home.heroTaglineNodes === 0,
+    `taglineNodes=${home.heroTaglineNodes}`);
+
   // ---- Game 1: pl-quick, single player, songsToWin 2 ----
   await startGame('pl-quick', ['Solo'], 2);
 
   let board = await page.evaluate(() => ({
     heading: document.querySelector('.game-player-name')?.textContent?.trim(),
     rows: document.querySelectorAll('.game-list-row').length,
-    startYear: document.querySelector('.game-list-row .track-year')?.textContent?.trim(),
+    startYear: document.querySelector('.game-list-row .game-year-large')?.textContent?.trim(),
     hiddenHtml: document.querySelector('.game-hidden-slot')?.outerHTML ?? '',
     hiddenText: document.querySelector('.game-hidden-slot')?.textContent?.trim(),
     hiddenId: document.querySelector('.game-hidden-slot')?.getAttribute('data-hidden-id'),
@@ -147,6 +217,7 @@ export async function runGameWalk({ page, check, BASE }) {
     !board.hiddenHtml.includes('Retro') && !board.hiddenHtml.includes('Future')
       && !board.hiddenHtml.includes('1990') && !board.hiddenHtml.includes('2020'),
     board.hiddenHtml);
+  await checkRowMetadata('G1 turn 1: start-card row metadata (year-first, cover img, artist+title, no ordinals)');
 
   // Identify the hidden song from the start card's year (2-card deck:
   // hidden = the one other track; drawNext skips owned cards).
@@ -199,6 +270,24 @@ export async function runGameWalk({ page, check, BASE }) {
   overlay = await overlayState();
   check('G2 Ada correct drop shows success overlay', overlay.heading === 'Correct!',
     JSON.stringify(overlay));
+  // S04-T1: with the pinned deck seed, Ada's drawn hidden song is t1995-1
+  // ("One Hit 1", the image-less fixture). Its placed row must show the 🎵
+  // fallback instead of an img; every other row keeps a real cover img.
+  const g2rows = await page.evaluate(() =>
+    [...document.querySelectorAll('.game-list-row')].map((r) => ({
+      title: (r.querySelector('.track-title')?.textContent ?? '').trim(),
+      img: Boolean(r.querySelector('img.track-cover')),
+      fallback: r.querySelector('.track-cover-placeholder')?.textContent?.trim() ?? null,
+    })),
+  );
+  const g2Hit = g2rows.find((r) => r.title === 'One Hit 1');
+  check('G2 Ada drop: placed t1995-1 row shows the 🎵 no-cover fallback (no img)',
+    Boolean(g2Hit) && g2Hit.fallback === '🎵' && !g2Hit.img,
+    JSON.stringify(g2rows));
+  check('G2 Ada drop: every other placed row keeps a real cover img',
+    g2rows.every((r) => (r.title === 'One Hit 1' ? true : r.img)),
+    JSON.stringify(g2rows));
+  await checkRowMetadata('G2 Ada rows: metadata invariants (mixed img + 🎵 fallback)');
   await clickContinue(); // Ada won (1 song... 2 after drop) -> removed from rotation
   const boHeading = await turnPlayerName();
   check('G2 Continue rotates to Bo (winner removed from rotation)',
@@ -244,6 +333,7 @@ export async function runGameWalk({ page, check, BASE }) {
   check('G3 pre-reload: active-game pointer + snapshot persisted',
     Boolean(preReload.activePointer) && Boolean(preReload.snapshot),
     `pointer=${preReload.activePointer}`);
+  await checkRowMetadata("G3 pre-reload: Ada's placed row metadata (year-first, cover, artist+title, no ordinals)");
 
   // Hard reload of the bare /game route (full page load resets the
   // module-slot take-once caches — exactly the refresh-resume path).
@@ -275,6 +365,7 @@ export async function runGameWalk({ page, check, BASE }) {
   check('G3 resume: identical persisted snapshot (deck + lists + hidden song)',
     postReload.snapshot === preReload.snapshot && Boolean(postReload.snapshot),
     preReload.snapshot === postReload.snapshot ? 'byte-identical' : 'SNAPSHOT DRIFTED');
+  await checkRowMetadata('G3 resume: restored row metadata identical invariants after reload');
   await dragHiddenTo(1); // Bo's turn continues: drop still works after resume
   overlay3 = await overlayState();
   check('G3 resume: post-resume drop is judged (Bo success overlay)',
@@ -297,11 +388,12 @@ export async function runGameWalk({ page, check, BASE }) {
   const g4Start = await page.evaluate(() => ({
     heading: document.querySelector('.game-player-name')?.textContent?.trim(),
     rows: document.querySelectorAll('.game-list-row').length,
-    startYear: document.querySelector('.game-list-row .track-year')?.textContent?.trim(),
+    startYear: document.querySelector('.game-list-row .game-year-large')?.textContent?.trim(),
   }));
   check('G4 turn 1: Ada starts with her start card dealt',
     g4Start.heading === "Ada's turn" && g4Start.rows === 1 && Boolean(g4Start.startYear),
     JSON.stringify(g4Start));
+  await checkRowMetadata('G4 turn 1: start-card row metadata (year-first, cover img, artist+title, no ordinals)');
   const g4StartIs1990 = g4Start.startYear === '1990';
   const g4HiddenName = g4StartIs1990 ? 'Future Bop' : 'Retro Rodge';
   const g4HiddenYear = g4StartIs1990 ? '2020' : '1990';
@@ -354,6 +446,7 @@ export async function runGameWalk({ page, check, BASE }) {
   overlay4 = await overlayState();
   check('G4 Bo correct drop: success overlay + song joined (rows 2)',
     overlay4.heading === 'Correct!' && overlay4.rows === 2, JSON.stringify(overlay4));
+  await checkRowMetadata('G4 Bo rows: metadata invariants after correct drop');
   await clickContinue(); // Bo reached songsToWin -> winner, removed from rotation
   check('G4 winner removed from rotation: Continue advances to Ada (last player)',
     (await turnPlayerName()) === "Ada's turn", await turnPlayerName());
@@ -372,20 +465,12 @@ export async function runGameWalk({ page, check, BASE }) {
       players: players.map((p) => ({
         rank: p.getAttribute('data-rank'),
         name: p.querySelector('.podium-player-title')?.textContent?.trim(),
-        songs: [...p.querySelectorAll('[data-testid="podium-song"]')].map((s) => ({
-          title: s.querySelector('.track-title')?.textContent?.trim(),
-          year: s.querySelector('.track-year')?.textContent?.trim(),
-        })),
       })),
+      songRows: document.querySelectorAll('[data-testid="podium-song"]').length,
     };
   });
-  // Final chronology is always chronological: the correct drop inserts the
-  // hidden song at its judged position, so both players end [1990, 2020]
-  // regardless of which track was the start card (deck order flips per run).
-  const expectedChronology = JSON.stringify([
-    { title: 'Retro Rodge', year: '1990' },
-    { title: 'Future Bop', year: '2020' },
-  ]);
+  // Names-only podium (M008/S03): ranked players, zero song rows; the
+  // sr-only winners list stays for DOM-observable winner count.
   check('G4 podium: game-over view renders the PodiumSummary testid + sr-only winners list',
     podium.podium === true && podium.heading === 'Game over' && podium.winnerListCount === 2,
     JSON.stringify(podium));
@@ -395,12 +480,8 @@ export async function runGameWalk({ page, check, BASE }) {
       && podium.players[0].name.includes('winner!')
       && podium.players[1].rank === '2' && podium.players[1].name === 'Ada',
     JSON.stringify(podium.players.map((p) => ({ rank: p.rank, name: p.name }))));
-  check('G4 podium: rank-1 winner (Bo) full revealed chronology',
-    JSON.stringify(podium.players[0].songs) === expectedChronology,
-    `${JSON.stringify(podium.players[0].songs)} vs ${expectedChronology}`);
-  check('G4 podium: rank-2 player (Ada) full revealed chronology',
-    JSON.stringify(podium.players[1].songs) === expectedChronology,
-    `${JSON.stringify(podium.players[1].songs)} vs ${expectedChronology}`);
+  check('G4 podium: winners-only podium — zero song rows (M008/S03 names-only)',
+    podium.songRows === 0, `podium-song rows=${podium.songRows}`);
 
   // Option navigation through the real routes: Play again -> /setup/<id>.
   await page.locator('[data-testid="podium-play-again"]').click();
@@ -413,12 +494,13 @@ export async function runGameWalk({ page, check, BASE }) {
   // Back-to-playlist option -> /playlist/<id> gets exercised.
   await startGame('pl-quick', ['Solo'], 2);
   const g4bStart = await page.evaluate(() => ({
-    startYear: document.querySelector('.game-list-row .track-year')?.textContent?.trim(),
+    startYear: document.querySelector('.game-list-row .game-year-large')?.textContent?.trim(),
   }));
   await dragHiddenTo(g4bStart.startYear === '1990' ? 1 : 0);
   const overlay4b = await overlayState();
   check('G4b quick replay: Solo correct drop wins the game',
     overlay4b.heading === 'Correct!' && overlay4b.rows === 2, JSON.stringify(overlay4b));
+  await checkRowMetadata('G4b quick replay: row metadata invariants behind the overlay');
   await clickContinue(true);
   await page.waitForSelector('[data-testid="podium-back-to-playlist"]', { timeout: WAIT_MS });
   await page.locator('[data-testid="podium-back-to-playlist"]').click();

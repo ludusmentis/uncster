@@ -15,6 +15,7 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderToString } from 'react-dom/server';
+import TestRenderer, { act } from 'react-test-renderer';
 import type { ComponentType } from 'react';
 import type { GameConfig } from '../game/setupLogic';
 import type { TurnSong } from '../game/turnEngine';
@@ -99,8 +100,6 @@ describe('Game view (S02-T02)', () => {
 });
 
 /* ---- S02-T04: outcome overlays, reveals, and Continue rotation ---- */
-
-import TestRenderer, { act } from 'react-test-renderer';
 
 function findFirst(
   root: TestRenderer.ReactTestRenderer,
@@ -756,14 +755,12 @@ describe('Game game-over podium (S05-T02)', () => {
     expect(players).toHaveLength(2);
     expect(players[0].props).toMatchObject({ 'data-player-id': 'p-1', 'data-rank': 1 });
     expect(players[1].props).toMatchObject({ 'data-player-id': 'p-2', 'data-rank': 2 });
-    // Both chronologies fully revealed (2 songs per player).
+    // Names-only podium: zero per-player song rows (M008 / S03).
     expect(root.root.findAll(
       (n) => (n.props as { 'data-testid'?: string })['data-testid'] === 'podium-song',
-    )).toHaveLength(4);
-    expect(json).toContain('Podium Win A');
-    expect(json).toContain('2005');
-    expect(json).toContain('Podium Win B');
-    expect(json).toContain('2006');
+    )).toHaveLength(0);
+    expect(json).not.toContain('Podium Win A');
+    expect(json).not.toContain('Podium Win B');
     expect(json).toContain('winner!');
     // Exit options render (component tests assert the routes themselves).
     expect(json).toContain('Play again');
@@ -774,5 +771,102 @@ describe('Game game-over podium (S05-T02)', () => {
     )).toHaveLength(1);
     expect(allText(root.toJSON())).toContain('p-1');
     expect(allText(root.toJSON())).toContain('p-2');
+  });
+});
+
+// S02-T3: board render shows the enriched row — artist name and cover art
+// (img, or 🎵 placeholder when a song has no coverUrl) inside game-list-row.
+// A fresh board renders exactly one placed row (the start card); the next
+// deck song is the hidden ? slot, so each variant is asserted on its own
+// render whose start card carries (or omits) coverUrl.
+describe('Game board enriched rows (S02-T3)', () => {
+  it('renders artist name and .track-cover img inside .game-list-row', async () => {
+    const Game = await fresh(true);
+    const enrichedDeck: TurnSong[] = [
+      { name: 'Fixture Song', artist: 'Fixture Artist', coverUrl: 'https://example.com/cover.jpg', releaseYear: '2001' },
+      { name: 'Hidden Next', releaseYear: '1990' },
+    ];
+    const root = TestRenderer.create(<Game deck={enrichedDeck} />);
+    const rows = root.root.findAll((n) =>
+      String((n.props as { className?: string }).className ?? '').includes('game-list-row'),
+    );
+    expect(rows.length).toBe(1);
+    // Artist name visible in the row.
+    expect(allText(root.toJSON())).toContain('Fixture Artist');
+    // Cover art img rendered with the fixture URL inside the game-list-row.
+    const coverInRow = rows[0].findAll(
+      (n) => String((n.props as { className?: string }).className ?? '').includes('track-cover')
+        && (n.props as { src?: string }).src === 'https://example.com/cover.jpg',
+    );
+    expect(coverInRow.length).toBe(1);
+  });
+
+  it('falls back to .track-cover-placeholder when the row song has no coverUrl', async () => {
+    const Game = await fresh(true);
+    const noArtDeck: TurnSong[] = [
+      { name: 'No Art Song', artist: 'Fixture Artist', releaseYear: '1990' },
+      { name: 'Hidden Next', releaseYear: '2001' },
+    ];
+    const root = TestRenderer.create(<Game deck={noArtDeck} />);
+    const rows = root.root.findAll((n) =>
+      String((n.props as { className?: string }).className ?? '').includes('game-list-row'),
+    );
+    expect(rows.length).toBe(1);
+    expect(rows[0].findAll(
+      (n) => String((n.props as { className?: string }).className ?? '').includes('track-cover-placeholder'),
+    ).length).toBe(1);
+    expect(rows[0].findAll(
+      (n) => String((n.props as { className?: string }).className ?? '').split(/\s+/).includes('track-cover'),
+    ).length).toBe(0);
+  });
+});
+
+// S02-T1: buildDeck enrichment — artist/coverUrl stamped onto deck songs.
+describe('buildDeck enrichment (S02-T1)', () => {
+  const img = (height: number | null, url: string) => ({ height, width: height, url });
+  const trackFixture = (
+    name: string,
+    overrides: {
+      artists?: { id: string; name: string }[];
+      images?: { height: number | null; width: number | null; url: string }[];
+      releaseDate?: string;
+      type?: 'track' | 'episode';
+    } = {},
+  ) => ({
+    item: {
+      id: `id-${name}`,
+      name,
+      type: overrides.type ?? ('track' as const),
+      uri: `spotify:track:${name}`,
+      artists: overrides.artists ?? [{ id: 'a1', name: 'Alpha' }],
+      album: {
+        release_date: overrides.releaseDate ?? '1998-05-01',
+        release_date_precision: 'day' as const,
+        images: overrides.images ?? [img(640, 'https://i/640'), img(64, 'https://i/64')],
+      },
+    },
+  });
+
+  it('stamps artist and coverUrl onto deck songs', async () => {
+    vi.resetModules();
+    const { buildDeck } = await import('./Game');
+    const items = [
+      trackFixture('Rich Track', {
+        artists: [{ id: 'a1', name: 'Alpha' }, { id: 'a2', name: 'Beta' }],
+        images: [img(640, 'https://i/640'), img(64, 'https://i/64')],
+      }),
+      trackFixture('No Image Track', { images: [] }),
+    ];
+    const songs = buildDeck(items as never);
+    expect(songs).toHaveLength(2);
+    const byName = new Map(songs.map((s) => [s.name, s]));
+    const rich = byName.get('Rich Track')!;
+    expect(rich.releaseYear).toBe('1998');
+    expect(rich.artist).toBe('Alpha, Beta');
+    expect(rich.coverUrl).toBe('https://i/640');
+    const noImage = byName.get('No Image Track')!;
+    expect(noImage.releaseYear).toBe('1998');
+    expect(noImage.coverUrl).toBeUndefined();
+    expect(noImage.artist).toBe('Alpha');
   });
 });

@@ -25,6 +25,7 @@ import {
   type GameSnapshot,
 } from './gameStateStore';
 import { createTurnState, startTurn, drawHidden, drop, resolveTurn } from './turnEngine';
+import type { TurnSong } from './turnEngine';
 import type { GameConfig } from './setupLogic';
 
 class MemoryLocalStorage {
@@ -189,5 +190,28 @@ describe('resumeGame reconstruction', () => {
 
   it('returns null on a structurally invalid state', () => {
     expect(resumeGame({ version: GAME_SNAPSHOT_VERSION, config: CONFIG, state: { ...createTurnState(CONFIG.players.map((p) => ({ ...p, songs: [] })), TRACKS, 3), currentIndex: 7 } })).toBeNull();
+  });
+});
+
+// S02-T1: snapshot round-trip preserves artist/coverUrl on deck songs.
+// JSON.stringify carries the extra fields, and validation must never
+// tighten against them — pin it here.
+describe('snapshot enrichment round-trip (S02-T1)', () => {
+  it('preserves artist and coverUrl on songs through save/load', () => {
+    const enriched: TurnSong[] = [
+      { name: 'Song A', uri: 'uri:a', releaseYear: '1998', artist: 'Alpha', coverUrl: 'https://i/a' },
+      ...TRACKS.slice(1),
+    ];
+    const state = createTurnState(
+      CONFIG.players.map((p) => ({ ...p, songs: [] })),
+      enriched,
+      3,
+    );
+    saveGameState('pl-1', CONFIG, state);
+    const loaded = loadGameState('pl-1');
+    expect(loaded).not.toBeNull();
+    expect(loaded!.state.deck).toEqual(enriched);
+    expect(loaded!.state.deck[0].artist).toBe('Alpha');
+    expect(loaded!.state.deck[0].coverUrl).toBe('https://i/a');
   });
 });

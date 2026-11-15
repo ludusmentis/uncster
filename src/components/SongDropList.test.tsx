@@ -67,6 +67,86 @@ function findHiddenSlot(root: TestRenderer.ReactTestRenderer) {
   return handle[0];
 }
 
+/** Find a game-list row by its title text. */
+function findRow(root: TestRenderer.ReactTestRenderer, title: string) {
+  const row = root.root.findAll((n) => (n.props.className ?? '').includes('game-list-row'))
+    .find((n) => n.findByProps({ className: 'track-title' }).children.includes(title));
+  expect(row).toBeDefined();
+  return row!;
+}
+
+describe('SongDropList game rows (M008 / S02-T2)', () => {
+  it('rows are year-first with no ordinal index', () => {
+    const root = TestRenderer.create(
+      <SongDropList songs={songs} hiddenId={null} onPlace={vi.fn()} />,
+    );
+    const rows = root.root.findAll((n) => (n.props.className ?? '').includes('game-list-row'));
+    expect(rows).toHaveLength(3);
+    // No ordinal numbering anywhere in the rows.
+    expect(root.root.findAll((n) => (n.props.className ?? '') === 'track-index')).toHaveLength(0);
+    for (const row of rows) {
+      const first = row.children[0] as TestRenderer.ReactTestInstance;
+      expect(first.props.className).toBe('game-year-large');
+    }
+  });
+
+  it('year span renders the song release year, or — when unknown', () => {
+    const root = TestRenderer.create(
+      <SongDropList songs={songs} hiddenId={null} onPlace={vi.fn()} />,
+    );
+    const row0 = findRow(root, 'Start Card Song');
+    const year = row0.children[0] as TestRenderer.ReactTestInstance;
+    expect(year.children).toEqual(['2001']);
+    const row2 = findRow(root, 'Newer Song');
+    expect((row2.children[0] as TestRenderer.ReactTestInstance).children).toEqual(['2010']);
+  });
+
+  it('renders artist in .track-artist, falling back to — when absent', () => {
+    const withArtist: TurnSong[] = [
+      { name: 'Titled', releaseYear: '1999', artist: 'Alpha, Beta' },
+      { name: 'No Artist', releaseYear: '1988' },
+    ];
+    const root = TestRenderer.create(
+      <SongDropList songs={withArtist} hiddenId={null} onPlace={vi.fn()} />,
+    );
+    const r0 = findRow(root, 'Titled');
+    expect((r0.findByProps({ className: 'track-artist' }) as TestRenderer.ReactTestInstance).children).toEqual(['Alpha, Beta']);
+    const r1 = findRow(root, 'No Artist');
+    expect((r1.findByProps({ className: 'track-artist' }) as TestRenderer.ReactTestInstance).children).toEqual(['—']);
+  });
+
+  it('cover img when coverUrl set; 🎵 placeholder when absent', () => {
+    const withCover: TurnSong[] = [
+      { name: 'With Cover', releaseYear: '2005', coverUrl: 'https://i/cover.jpg' },
+      { name: 'No Cover', releaseYear: '1992' },
+    ];
+    const root = TestRenderer.create(
+      <SongDropList songs={withCover} hiddenId={null} onPlace={vi.fn()} />,
+    );
+    const r0 = findRow(root, 'With Cover');
+    const img = r0.findByProps({ className: 'track-cover' }) as TestRenderer.ReactTestInstance;
+    expect(img.props.src).toBe('https://i/cover.jpg');
+    expect(img.props.alt).toBe('');
+    const r1 = findRow(root, 'No Cover');
+    const ph = r1.findByProps({ className: 'track-cover-placeholder' }) as TestRenderer.ReactTestInstance;
+    expect(ph.children).toEqual(['🎵']);
+    expect(r1.findAll((n) => (n.props.className ?? '') === 'track-cover')).toHaveLength(0);
+  });
+
+  it('hidden slot keeps zero metadata alongside the new row layout', () => {
+    const withCover: TurnSong[] = [
+      { name: 'With Cover', releaseYear: '2005', artist: 'Alpha', coverUrl: 'https://i/cover.jpg' },
+    ];
+    const root = TestRenderer.create(
+      <SongDropList songs={withCover} hiddenId="turn:0:0:1" onPlace={vi.fn()} />,
+    );
+    const handle = findHiddenSlot(root);
+    expect(handle.children).toHaveLength(1);
+    const propKeys = Object.keys(handle.props).filter((k) => !k.startsWith('__'));
+    expect(propKeys.join(',')).not.toMatch(/title|artist|year/i);
+  });
+});
+
 describe('SongDropList rendering and interaction (S02-T03)', () => {
   it('renders n+1 insertion gaps around the rows, with data-drop-index', () => {
     const root = TestRenderer.create(

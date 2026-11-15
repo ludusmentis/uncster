@@ -2,13 +2,10 @@
  * PodiumSummary (M007 / S05, T02) — full game-over podium.
  *
  * Rendered by the game view once the engine is finished (every player
- * has won): one block per player in win order (rank 1 first), each
- * showing the player's name above their FULL revealed chronology in
- * the standard track-row styling (title/artist placeholder/year all
- * visible — the hidden-until-drop rule is over at game over; missing
- * release years render the RELEASE_YEAR_PLACEHOLDER). Two exit options:
- * Play again → /setup/<playlistId> and Back to playlist →
- * /playlist/<playlistId>.
+ * has won): one block per player in win order (rank 1 first), showing
+ * only ranked player names (M008 / S03 — names-only podium; no
+ * per-player song lists). Two exit options: Play again →
+ * /setup/<playlistId> and Back to playlist → /playlist/<playlistId>.
  *
  * Pure render of in-memory engine state (podium is derived in the view
  * builder): no store or reducer changes. Refresh after game over falls
@@ -16,7 +13,6 @@
  */
 
 import type { PodiumEntry } from '../game/useGameEngine';
-import { RELEASE_YEAR_PLACEHOLDER } from '../api/tracks';
 import { navigate } from '../routing';
 
 interface PodiumSummaryProps {
@@ -55,29 +51,6 @@ export default function PodiumSummary({
                 {entry.rank === 1 && <span className="podium-winner"> — winner!</span>}
               </span>
             </h3>
-            {entry.songs.length > 0 ? (
-              <ol className="track-list game-list podium-song-list">
-                {entry.songs.map((song, index) => (
-                  <li
-                    key={`${song.name}-${index}`}
-                    className="track-item game-list-row"
-                    data-testid="podium-song"
-                  >
-                    <span className="track-index" aria-hidden="true">{index + 1}</span>
-                    <span aria-hidden="true" className="track-cover-placeholder">🎵</span>
-                    <div className="track-info">
-                      <p className="track-title">{song.name}</p>
-                      <p className="track-artist">—</p>
-                    </div>
-                    <span className="track-year">
-                      {song.releaseYear ?? RELEASE_YEAR_PLACEHOLDER}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <p className="podium-empty">No songs placed.</p>
-            )}
           </li>
         ))}
       </ol>

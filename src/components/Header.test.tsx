@@ -3,7 +3,6 @@
  * - Header renders the Monoton 'Uncster' wordmark as a keyboard-navigable
  *   button, showing display name + Log out when authed, and Connect /
  *   Reconnect Spotify when unauthed (props-driven, no new data fetching).
- * - HeroTagline renders the fixed tagline copy with the neon-heading class.
  * - PageShell wraps children in the shared .container shell.
  * - base.css defines the glow-pulse keyframes and the prefers-reduced-motion
  *   guard, so the pulse is visible but reduced-motion-safe.
@@ -19,7 +18,6 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { renderToString } from 'react-dom/server';
 import Header from './Header';
-import HeroTagline from './HeroTagline';
 import PageShell from './PageShell';
 
 const noop = (): void => {};
@@ -78,14 +76,6 @@ describe('Header (app chrome)', () => {
   it('marks the connect button as the primary pill action', () => {
     const html = renderHeader({ authed: false });
     expect(html).toMatch(/<button[^>]*btn btn-primary[^>]*>Connect Spotify</);
-  });
-});
-
-describe('HeroTagline', () => {
-  it('renders the fixed tagline copy with the neon-heading glow class', () => {
-    const html = renderToString(<HeroTagline />);
-    expect(html).toContain('neon-heading hero-tagline');
-    expect(html).toContain('Your playlists called. They want receipts.');
   });
 });
 

@@ -1,10 +1,9 @@
 /**
- * Tests for PodiumSummary (M007 / S05, T02).
+ * Tests for PodiumSummary (M007 / S05, T02; M008 / S03 names-only).
  *
  * The podium renders one block per player in win order (rank 1 first),
- * each showing the player's FULL revealed chronology in track-row
- * styling (title + year all visible at game over; missing releaseYear
- * renders the RELEASE_YEAR_PLACEHOLDER). Play again navigates to
+ * showing only ranked player names — NO per-player song lists (zero
+ * [data-testid=podium-song] rows, M008 / S03). Play again navigates to
  * /setup/<playlistId> and Back to playlist to /playlist/<playlistId>
  * (verified through the routing module's pushState bridge).
  */
@@ -14,7 +13,6 @@ import TestRenderer, { act } from 'react-test-renderer';
 import type { PodiumEntry } from '../game/useGameEngine';
 import type { TurnSong } from '../game/turnEngine';
 import PodiumSummary from './PodiumSummary';
-import { RELEASE_YEAR_PLACEHOLDER } from '../api/tracks';
 
 const songs = (years: Array<string | undefined>, names?: string[]): TurnSong[] =>
   years.map((y, i) => ({
@@ -69,7 +67,7 @@ describe('PodiumSummary (S05-T02)', () => {
     (globalThis as Record<string, unknown>).history = undefined;
   });
 
-  it('renders every player in win order with fully revealed chronology rows', () => {
+  it('renders every player in win order with names only (no song lists)', () => {
     (globalThis as Record<string, unknown>).history = historyStub;
     const root = mount();
     const players = findAll(root, (n) =>
@@ -79,21 +77,19 @@ describe('PodiumSummary (S05-T02)', () => {
     expect(players[0].props).toMatchObject({ 'data-rank': 1, 'data-player-id': 'p-1' });
     expect(players[1].props).toMatchObject({ 'data-rank': 2, 'data-player-id': 'p-2' });
 
-    const songRows = findAll(
-      root, (n) => (n.props as { 'data-testid'?: string })['data-testid'] === 'podium-song');
-    // 2 songs per player, all revealed at game over.
-    expect(songRows).toHaveLength(4);
+    // Names-only podium: zero song rows anywhere in the render.
+    const songRows = root.root.findAll(
+      (n) => (n.props as { 'data-testid'?: string })['data-testid'] === 'podium-song');
+    expect(songRows).toHaveLength(0);
 
     const json = JSON.stringify(root.toJSON());
     expect(json).toContain('Game over');
     expect(json).toContain('#1');
     expect(json).toContain('winner!');
-    expect(json).toContain('Song A');
-    expect(json).toContain('1999');
-    expect(json).toContain('2005');
-    // Missing releaseYear renders the placeholder (RELEASE_YEAR_PLACEHOLDER).
-    expect(json).toContain('Mystery Track');
-    expect(json).toContain(RELEASE_YEAR_PLACEHOLDER);
+    expect(json).not.toContain('Song A');
+    expect(json).not.toContain('1999');
+    expect(json).not.toContain('2005');
+    expect(json).not.toContain('podium-song-list');
     // UAT-walk DOM observability: the sr-only winners list stays rendered.
     expect(json).toContain('game-over-winners');
     expect(textOf(root.toJSON())).toContain('pl-1'.length > 0 ? 'Orlo' : '');

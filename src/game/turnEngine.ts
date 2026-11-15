@@ -35,6 +35,10 @@ export type TurnPhase =
 export interface TurnSong extends DeckSong {
   /** Release year as a string ('1998'), or missing when unknown. */
   releaseYear?: string;
+  /** Artist name(s) joined with ', ' (from track.artists), or missing when unknown. */
+  artist?: string;
+  /** Cover art URL (first album image), or missing when the track has no image. */
+  coverUrl?: string;
 }
 
 export interface TurnPlayer {

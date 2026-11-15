@@ -86,16 +86,27 @@ function resolveStart(): StartEntry {
   return lastResolvedStart.value;
 }
 
-/** Build the TurnSong deck: shuffled tracks, each stamped with its year. */
-function buildDeck(items: Awaited<ReturnType<typeof fetchAllPlaylistTracks>>): TurnSong[] {
-  // Year lookup keyed on the same identity the deck uses (songKey).
-  const yearByKey = new Map<string, string>();
+/** Enriched per-song metadata stamped onto the deck next to releaseYear. */
+interface SongMeta {
+  year: string;
+  artist: string;
+  coverUrl: string | undefined;
+}
+
+/** Build the TurnSong deck: shuffled tracks, each stamped with its year/artist/cover. */
+export function buildDeck(items: Awaited<ReturnType<typeof fetchAllPlaylistTracks>>): TurnSong[] {
+  // Metadata lookup keyed on the same identity the deck uses (songKey).
+  const metaByKey = new Map<string, SongMeta>();
   for (const item of items) {
     const track = item.item;
     if (track) {
-      yearByKey.set(
+      metaByKey.set(
         songKey({ name: track.name, uri: track.uri, linked_from: (track as DeckSong).linked_from }),
-        releaseYear(item),
+        {
+          year: releaseYear(item),
+          artist: track.artists.map((a) => a.name).join(', '),
+          coverUrl: track.album.images.find((img) => img.url)?.url ?? undefined,
+        },
       );
     }
   }
@@ -103,10 +114,15 @@ function buildDeck(items: Awaited<ReturnType<typeof fetchAllPlaylistTracks>>): T
     .map((item) => item.item)
     .filter((t): t is NonNullable<typeof t> => t !== null);
   const deck = createDeck(tracks, Date.now());
-  return deck.map((song) => ({
-    ...song,
-    releaseYear: yearByKey.get(songKey(song)),
-  }));
+  return deck.map((song) => {
+    const meta = metaByKey.get(songKey(song));
+    return {
+      ...song,
+      releaseYear: meta?.year,
+      artist: meta?.artist,
+      coverUrl: meta?.coverUrl,
+    };
+  });
 }
 
 function GameFallback(): JSX.Element {
