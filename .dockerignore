@@ -1,0 +1,6 @@
+node_modules
+dist
+.gsd
+.artifacts
+.env
+.env.*

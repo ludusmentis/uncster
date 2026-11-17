@@ -1,0 +1,15 @@
+# Compose service for the harlequin SPA container.
+# Maps host 3000 -> container 80 to match the registered Spotify redirect URI
+# http://127.0.0.1:3000. Build uses the S01 Dockerfile (Vite build + nginx).
+# No runtime volumes or env vars are needed — the app is a static bundle.
+# VITE_SPOTIFY_CLIENT_ID is a BUILD-time var (Vite inlines it): pass it via
+# the host environment or a .env next to this file (compose interpolation).
+services:
+  app:
+    build:
+      context: .
+      args:
+        VITE_SPOTIFY_CLIENT_ID: ${VITE_SPOTIFY_CLIENT_ID:-}
+    ports:
+      - "3000:80"
+    restart: unless-stopped
